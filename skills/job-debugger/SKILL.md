@@ -11,7 +11,7 @@ description: >
 license: MIT
 metadata:
   author: duvoai
-  version: "1.0.1"
+  version: "1.0.2"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -210,6 +210,7 @@ Use Duvo's nouns when describing the failure and the fix. Never substitute — t
 ## See also
 
 - `sop-writer` — once you've named the failure, hand off the in-effect SOP and the change request; this skill never rewrites SOPs itself.
+- `workflow-debugger` — when the problem is the Assignment's behaviour across many Jobs rather than this one Job, audit the whole workflow there; it hands representative Jobs back to this skill for transcript-level depth.
 - `duvo-cli` — alternative to MCP for API mode (`duvo runs get`, `duvo runs messages`, `duvo revisions get`); useful when the user is debugging from a terminal.
 
 ## Resources

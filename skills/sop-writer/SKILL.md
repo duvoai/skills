@@ -8,7 +8,7 @@ description: >
 license: MIT
 metadata:
   author: duvoai
-  version: "1.0.1"
+  version: "1.0.2"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -132,6 +132,7 @@ See `references/sop-examples.md` for canonical worked examples to calibrate agai
 ## See also
 
 - `job-debugger` — when a Job ran with an SOP and failed, start there to diagnose the root cause; it will hand off to this skill if the fix is an SOP rewrite.
+- `workflow-debugger` — audits an Assignment across many Jobs; hands off here when a systemic fix is an SOP change.
 - `duvo-cli` — once the SOP is finalized, `duvo revisions create` / `duvo revisions update` ships it from the terminal.
 
 ## Resources

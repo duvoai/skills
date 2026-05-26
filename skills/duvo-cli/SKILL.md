@@ -9,7 +9,7 @@ description: >
 license: MIT
 metadata:
   author: duvoai
-  version: "1.0.1"
+  version: "1.0.2"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -251,6 +251,7 @@ the final source of truth.
 
 - `sop-writer` — author or rewrite the SOP that ships in a Build (`duvo revisions create` / `duvo revisions update`).
 - `job-debugger` — diagnose a failed Job; pairs with `duvo runs get`, `duvo runs messages`, and `duvo revisions get` for API-mode reads.
+- `workflow-debugger` — audit an Assignment or workflow across many Jobs; pairs with `duvo runs list`, `duvo queues agents`, and `duvo revisions get`.
 
 ## Resources
 
