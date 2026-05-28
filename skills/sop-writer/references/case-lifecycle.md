@@ -18,10 +18,10 @@ A producer SOP's terminal step is the `add_cases` call (or a no-op if there is n
 Used by Assignments with the `case-queue-consumer` Connection. A consumer SOP processes one claimed case from start to finish.
 
 - **`claim_case`** — fetch the case for this Job (and atomically claim it, if not already bound at Job start). **MUST be step 1** of a consumer SOP on the initial run, because case data is not injected into the prompt automatically. On a follow-up message in the same Job, skip this step — the case is already bound. A Job can only claim one case in its lifetime.
-- **`update_case`** — write `title`, `data`, or `labels` back to the in-flight case. Use to record progress, intermediate findings, or state that needs to survive a `postpone_case`. **Required before `fail_case`** and **before `request_handover`** so the next Assignment or a human reviewer has context.
+- **`update_case`** — write `title`, `data`, or `labels` back to the in-flight case. Add an `update_case` step only where the process needs to record progress, intermediate findings, or state that must survive a `postpone_case`.
 - **`postpone_case`** — release the case and schedule a re-claim. The `postpone_to` parameter accepts a relative duration (`"2h"`, `"1d"`, `"1w"`) or an ISO timestamp. Use only for cases that _can_ complete later (waiting on a response, an SLA, a rate limit). Do NOT postpone for permanent or environment issues — use `fail_case` instead.
 - **`complete_case`** — terminal success. Mark the case done after the SOP's work is finished.
-- **`fail_case`** — terminal failure for permanent issues (missing data, broken credentials, unavailable tools). Always call `update_case` first to record what went wrong.
+- **`fail_case`** — terminal failure for permanent issues (missing data, broken credentials, unavailable tools).
 
 ## The postpone-then-retry idiom
 
@@ -45,7 +45,7 @@ Use a different flag name (`reminder_sent`, `escalation_sent`) for each waiting 
 Every branch of a consumer SOP must end in **exactly one** of:
 
 - `complete_case` — success.
-- `fail_case` — permanent failure (call `update_case` first).
+- `fail_case` — permanent failure.
 - `postpone_case` — temporary wait; the case returns to the queue.
 - `request_handover` — pass the claimed case to a different Assignment.
 
@@ -62,12 +62,12 @@ The `handover` Connection itself is added automatically at runtime — do not li
 
 ## When to use which terminal
 
-| Situation                                                                                           | Terminal call                              |
-| --------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| The SOP's work is finished and the case is resolved.                                                | `complete_case`                            |
-| The case can't be resolved now but can be retried later (SLA, rate limit, awaiting external reply). | `postpone_case` (+ `update_case` first)    |
-| The case can't be resolved at all (missing data, broken Connection, unsupported case type).         | `fail_case` (+ `update_case` first)        |
-| A different Assignment is better placed to continue (different domain, different specialist).       | `request_handover` (+ `update_case` first) |
+| Situation                                                                                           | Terminal call      |
+| --------------------------------------------------------------------------------------------------- | ------------------ |
+| The SOP's work is finished and the case is resolved.                                                | `complete_case`    |
+| The case can't be resolved now but can be retried later (SLA, rate limit, awaiting external reply). | `postpone_case`    |
+| The case can't be resolved at all (missing data, broken Connection, unsupported case type).         | `fail_case`        |
+| A different Assignment is better placed to continue (different domain, different specialist).       | `request_handover` |
 
 ## Case-lifecycle anti-patterns
 

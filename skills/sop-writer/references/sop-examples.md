@@ -95,7 +95,6 @@ What makes this excellent:
 - Step 1 is `claim_case` — non-negotiable for consumer SOPs.
 - Every branch reaches a terminal call (`complete_case`, `fail_case`, or `postpone_case`).
 - HITL is a first-class step with a concrete prompt, not "use your judgment".
-- `update_case` calls precede every terminal, recording outcome context.
 - Concrete thresholds ($200, 90 days) — no fuzzy adverbs.
 
 ---
