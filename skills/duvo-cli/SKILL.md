@@ -3,8 +3,9 @@ name: duvo-cli
 description: >
   Drive the Duvo public API from the terminal via the `duvo` CLI
   (`@duvoai/cli`). Use when the user wants to script Duvo — managing
-  agents, runs, cases, queues, files, skills, connections, or hitting an
-  arbitrary endpoint via `duvo api` — instead of clicking through the
+  agents, runs, cases, queues, files, skills, connections, Clarity
+  processes, or hitting an arbitrary endpoint via `duvo api` — instead of
+  clicking through the
   Duvo web UI or hand-crafting `curl` calls.
 license: MIT
 metadata:
@@ -150,6 +151,7 @@ The top-level groups are:
 - **Queues & cases** — `queues …`, `queue-labels …`, `cases …`
 - **Files & sandboxes** — `files …`, `sandboxes …`
 - **Connections & integrations** — `integrations …`, `connections …`, `oauth …`
+- **Clarity** — `clarity …` (read-only process search, versions, captures, gaps, evidence, facets, export, doctor)
 - **Skills & plugins** — `skills …`, `plugins …`
 - **Team** — `team get`, `team members`
 - **Low-level** — `api <method> <path>`
@@ -215,6 +217,14 @@ sandboxes …` stages files for a single run (`duvo runs start
   `duvo oauth native start <provider>` or `duvo oauth composio start
 …`, not by `duvo connections create` — the latter is only for
   user-provided MCP servers.
+- **Clarity is read-only in this CLI surface.** Start with
+  `duvo clarity overview <process-id>`, then use `versions`, `current`,
+  `proposal`, `compare`, `gaps`, `evidence`, `readiness`, or `facets` as
+  needed. Those v2-only commands require a Clarity v2 process; legacy v1
+  processes support only `overview`, `status`, `captures`, `capture`, and
+  `export`. Default output is compact; transcripts and media URLs are
+  included only when a JSON command explicitly passes
+  `--include-transcripts`.
 
 ## When the CLI is the wrong tool
 
