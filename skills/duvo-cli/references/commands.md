@@ -42,13 +42,13 @@ pass `-y` explicitly.
 
 ### Case triggers (per agent)
 
-| Command                                                                                                                                            | Purpose                                     |
-| -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| `duvo agents case-triggers list <agent-id> [--json]`                                                                                               | List case triggers configured for an agent. |
-| `duvo agents case-triggers get <agent-id> <trigger-id> [--json]`                                                                                   | Get a case trigger by ID.                   |
-| `duvo agents case-triggers create <agent-id> --queue <id> [--concurrency <n>] [--disable] [--json]`                                                | Create a case trigger bound to a queue.     |
-| `duvo agents case-triggers update <agent-id> <trigger-id> [--queue <id>] [--enable\|--disable] [--concurrency <n>] [--clear-concurrency] [--json]` | Toggle, rebind, or rescale a trigger.       |
-| `duvo agents case-triggers delete <agent-id> <trigger-id> [-y] [--json]`                                                                           | Delete a case trigger.                      |
+| Command                                                                                                                                            | Purpose                                                                       |
+| -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `duvo agents case-triggers list <agent-id> [--json]`                                                                                               | List case triggers configured for an agent.                                   |
+| `duvo agents case-triggers get <agent-id> <trigger-id> [--json]`                                                                                   | Get a case trigger by ID.                                                     |
+| `duvo agents case-triggers create <agent-id> --queue <id> [--enabled] [--concurrency <n>] [--json]`                                                | Create a case trigger bound to a queue (created disabled unless `--enabled`). |
+| `duvo agents case-triggers update <agent-id> <trigger-id> [--queue <id>] [--enable\|--disable] [--concurrency <n>] [--clear-concurrency] [--json]` | Toggle, rebind, or rescale a trigger.                                         |
+| `duvo agents case-triggers delete <agent-id> <trigger-id> [-y] [--json]`                                                                           | Delete a case trigger.                                                        |
 
 ## Agent folders
 
@@ -75,14 +75,16 @@ pass `-y` explicitly.
 `duvo revision-integrations …` manages the integration slots on a
 revision and the connections pinned to each slot.
 
-| Command                                                                                                                      | Purpose                                                       |
-| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `duvo revision-integrations list --agent <id> --revision <id> [--json]`                                                      | List integrations attached to a revision.                     |
-| `duvo revision-integrations attach --agent <id> --revision <id> --integration <slug> […] [--json]`                           | Attach one or more integrations to a revision.                |
-| `duvo revision-integrations remove <integration-id> --agent <id> --revision <id> [-y] [--json]`                              | Remove an integration slot from a revision.                   |
-| `duvo revision-integrations connections list --agent <id> --revision <id> --integration <id> [--json]`                       | List your pinned connections for a slot.                      |
-| `duvo revision-integrations connections pin <connection-id> --agent <id> --revision <id> --integration <id> [--json]`        | Pin one of your connections to a revision's integration slot. |
-| `duvo revision-integrations connections unpin <connection-id> --agent <id> --revision <id> --integration <id> [-y] [--json]` | Unpin a connection from a slot.                               |
+| Command                                                                                                                      | Purpose                                                                  |
+| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `duvo revision-integrations list --agent <id> --revision <id> [--json]`                                                      | List integrations attached to a revision.                                |
+| `duvo revision-integrations attach --agent <id> --revision <id> --integration <slug> […] [--json]`                           | Attach one or more integrations to a revision.                           |
+| `duvo revision-integrations remove <integration-id> --agent <id> --revision <id> [-y] [--json]`                              | Remove an integration slot from a revision.                              |
+| `duvo revision-integrations connections list --agent <id> --revision <id> --integration <id> [--json]`                       | List your pinned connections for a slot.                                 |
+| `duvo revision-integrations connections pin <connection-id> --agent <id> --revision <id> --integration <id> [--json]`        | Pin one of your connections to a revision's integration slot.            |
+| `duvo revision-integrations connections unpin <connection-id> --agent <id> --revision <id> --integration <id> [-y] [--json]` | Unpin a connection from a slot.                                          |
+| `duvo revision-integrations queues list --agent <id> --revision <id> --integration <id> [--json]`                            | List the case queues linked to a case-queue integration slot.            |
+| `duvo revision-integrations queues set --agent <id> --revision <id> --integration <id> [--queue <id> …] [--json]`            | Replace the case queues linked to a slot (omit `--queue` to unlink all). |
 
 ## Runs
 
@@ -100,42 +102,44 @@ revision and the connections pinned to each slot.
 
 ### Case queues
 
-| Command                                                                                                                        | Purpose                                                        |
-| ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
-| `duvo queues list [--limit <n>] [--offset <n>] [--json]`                                                                       | List case queues.                                              |
-| `duvo queues get <id> [--json]`                                                                                                | Get a queue by ID.                                             |
-| `duvo queues create --name <name> [--description <text>] [--folder-id <id>] [--json]`                                          | Create a queue.                                                |
-| `duvo queues update <id> [--name <n>] [--description <text>\|--clear-description] [--folder-id <id>\|--clear-folder] [--json]` | Update a queue.                                                |
-| `duvo queues delete <id> [-y] [--json]`                                                                                        | Delete a queue. Interrupts running jobs and removes all cases. |
-| `duvo queues agents <queue-id> [--json]`                                                                                       | List producer/consumer agents bound to a queue.                |
+| Command                                                                                                                                        | Purpose                                                                                                                                                       |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `duvo queues list [--limit <n>] [--offset <n>] [--json]`                                                                                       | List case queues.                                                                                                                                             |
+| `duvo queues get <id> [--json]`                                                                                                                | Get a queue by ID.                                                                                                                                            |
+| `duvo queues create --name <name> [--description <text>] [--folder-id <id>] [--json]`                                                          | Create a queue.                                                                                                                                               |
+| `duvo queues update <id> [--name <n>] [--description <text>\|--clear-description] [--folder-id <id>\|--clear-folder] [--json]`                 | Update a queue.                                                                                                                                               |
+| `duvo queues delete <id> [-y] [--json]`                                                                                                        | Delete a queue. Interrupts running jobs and removes all cases.                                                                                                |
+| `duvo queues agents <queue-id> [--json]`                                                                                                       | List producer/consumer agents bound to a queue.                                                                                                               |
+| `duvo queues link-agent <queue-id> --agent <id> --role <producer\|consumer> [--enable-trigger] [--concurrency <n>] [--revision <id>] [--json]` | Link an agent to a queue in a role. Attaches the case-queue integration on the live revision and maps the queue; for consumers also creates the case trigger. |
+| `duvo queues unlink-agent <queue-id> --agent <id> --role <producer\|consumer> [--revision <id>] [--json]`                                      | Reverse of `link-agent`: unmaps the queue from the role's slot; for consumers also removes the case trigger for that queue.                                   |
 
 ### Queue labels (label vocabulary on a queue)
 
-| Command                                                                                                           | Purpose                                                                 |
-| ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `duvo queue-labels list --queue <id> [--limit <n>] [--offset <n>] [--json]`                                       | List labels with case counts. `--limit` is 1-1000 (default 1000).       |
-| `duvo queue-labels create --queue <id> --value <text> [--key <text>] [--color-hue <0-360>] [--json]`              | Create a label without assigning it. Omit `--key` for a tag-only label. |
-| `duvo queue-labels update <label-id> --queue <id> [--key <text>] [--value <text>] [--color-hue <0-360>] [--json]` | Rename a label, change its key, or change its color.                    |
-| `duvo queue-labels delete <label-id> --queue <id> [-y] [--json]`                                                  | Delete a label and unlink it from all cases.                            |
+| Command                                                                                                           | Purpose                                                                                                            |
+| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `duvo queue-labels list --queue <id> [--limit <n>] [--offset <n>] [--json]`                                       | List labels with case counts. `--limit` is 1-1000 (default 1000).                                                  |
+| `duvo queue-labels create --queue <id> --value <text> [--key <text>] [--color-hue <0-360>] [--json]`              | Create a label without assigning it. Omit `--key` for a tag-only label.                                            |
+| `duvo queue-labels update <label-id> --queue <id> [--key <text>] [--value <text>] [--color-hue <0-360>] [--json]` | Rename a label, change its key, or change its color. A `--color-hue`-only edit re-sends the current value for you. |
+| `duvo queue-labels delete <label-id> --queue <id> [-y] [--json]`                                                  | Delete a label and unlink it from all cases.                                                                       |
 
 ### Cases
 
-| Command                                                                                                                                                 | Purpose                                                             |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `duvo cases list --queue <id> [--limit <n>] [--offset <n>] [--status <list>] [--search <text>] [--sort-by <field>] [--sort-order <asc\|desc>] [--json]` | List cases in a queue with filters.                                 |
-| `duvo cases get <id> [--json]`                                                                                                                          | Get a case by ID with its event history.                            |
-| `duvo cases create --queue <id> [--title <text>] [--data <text>] [--label <key=value>] [--from-file <path\|->] [--json]`                                | Create one case (with `--title`) or up to 100 (with `--from-file`). |
-| `duvo cases delete <id> [-y] [--json]`                                                                                                                  | Delete a case. Interrupts associated running jobs.                  |
-| `duvo cases clear --queue <id> [-y] [--json]`                                                                                                           | Delete every case in a queue.                                       |
-| `duvo cases bulk-delete --queue <id> --ids <list> [-y] [--json]`                                                                                        | Delete multiple cases (1-100, comma-separated IDs).                 |
-| `duvo cases bulk-delegate --queue <id> --agent <id> --ids <list> [-y] [--json]`                                                                         | Delegate cases to a queue consumer agent.                           |
-| `duvo cases bulk-retry --queue <id> --ids <list> [-y] [--json]`                                                                                         | Reset cases to `pending` (interrupts active runs).                  |
-| `duvo cases bulk-update-status --queue <id> --ids <list> --status <completed\|failed> [-y] [--json]`                                                    | Bulk-update case statuses.                                          |
-| `duvo cases runs <case-id> [--json]`                                                                                                                    | List jobs that have worked on a case.                               |
-| `duvo cases runs recent-messages <case-id> <run-id> [--json]`                                                                                           | Recent messages for one run on a case.                              |
-| `duvo cases labels list <case-id> --queue <id> [--json]`                                                                                                | List labels assigned to a case.                                     |
-| `duvo cases labels assign <case-id> --queue <id> --label <"key=value"\|"value"> [--label …] [--json]`                                                   | Assign one or more labels to a case (repeatable).                   |
-| `duvo cases labels unlink <case-id> --queue <id> --label-id <id> [--label-id …] [--json]`                                                               | Remove one or more labels from a case (repeatable).                 |
+| Command                                                                                                                                                 | Purpose                                                                                                                       |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `duvo cases list --queue <id> [--limit <n>] [--offset <n>] [--status <list>] [--search <text>] [--sort-by <field>] [--sort-order <asc\|desc>] [--json]` | List cases in a queue with filters.                                                                                           |
+| `duvo cases get <id> [--json]`                                                                                                                          | Get a case by ID with its event history.                                                                                      |
+| `duvo cases create --queue <id> [--title <text>] [--data <text>] [--label <key=value>] [--from-file <path\|->] [--json]`                                | Create one case (with `--title`) or up to 100 (with `--from-file`).                                                           |
+| `duvo cases delete <id> [-y] [--json]`                                                                                                                  | Delete a case. Interrupts associated running jobs.                                                                            |
+| `duvo cases clear --queue <id> [-y] [--json]`                                                                                                           | Delete every case in a queue.                                                                                                 |
+| `duvo cases bulk-delete --queue <id> --ids <list> [-y] [--json]`                                                                                        | Delete multiple cases (1-100, comma-separated IDs).                                                                           |
+| `duvo cases bulk-delegate --queue <id> --agent <id> --ids <list> [-y] [--json]`                                                                         | Delegate cases to a queue consumer agent.                                                                                     |
+| `duvo cases bulk-retry --queue <id> --ids <list> [-y] [--json]`                                                                                         | Reset cases to `pending` (interrupts active runs).                                                                            |
+| `duvo cases bulk-update-status --queue <id> --ids <list> --status <completed\|failed> [-y] [--json]`                                                    | Bulk-update case statuses.                                                                                                    |
+| `duvo cases runs <case-id> [--json]`                                                                                                                    | List jobs that have worked on a case.                                                                                         |
+| `duvo cases runs recent-messages <case-id> <run-id> [--json]`                                                                                           | Recent messages for one run on a case.                                                                                        |
+| `duvo cases labels list <case-id> --queue <id> [--json]`                                                                                                | List labels assigned to a case.                                                                                               |
+| `duvo cases labels assign <case-id> --queue <id> --label <"key=value"\|"value"> [--label …] [--json]`                                                   | Assign one or more labels to a case (repeatable).                                                                             |
+| `duvo cases labels unlink <case-id> --queue <id> [--label-id <id> …] [--label <"key=value"\|"value"> …] [--json]`                                       | Remove labels from a case by ID or by key=value (resolved against the case's labels). At least one of `--label-id`/`--label`. |
 
 `cases create --from-file` accepts a single case object or an array of
 up to 100. Shape per case:
@@ -150,6 +154,22 @@ up to 100. Shape per case:
 
 Labels are `{"key": "…", "value": "…"}` — omit `key` (or set it to
 `""`) for a tag-only label. Pass `-` as the path to read from stdin.
+
+### Case-queue gotchas
+
+- **Trigger-enable flag differs by command.** `duvo agents case-triggers
+create` takes `--enabled`; `duvo agents case-triggers update` takes
+  `--enable` / `--disable`; `duvo queues link-agent` takes
+  `--enable-trigger`. Three commands, three spellings — check `--help`.
+- **Attach can lag a fresh build.** `revision-integrations attach`
+  called right after `agents create` can return `count: 0` while the
+  build is still settling. `queues link-agent` re-attaches and verifies
+  the slot for you; raw `attach` callers should re-check before mapping
+  queues.
+- **Array bodies in the escape hatch.** `duvo api` builds JSON arrays
+  from repeated `-F "queue_ids[]=…"` flags, or from a `--input -` body
+  like `{"queue_ids":["…"]}`. A single non-`[]` field does not become an
+  array. See `api-escape-hatch.md`.
 
 ## Files & sandboxes
 

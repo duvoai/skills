@@ -72,6 +72,33 @@ echo '{"name":"v2","enabled":true}' > build.json
 duvo api POST /v1/agents -f name="Ops bot" -F build=@build.json
 ```
 
+## Array fields — `key[]`
+
+A field key ending in `[]` accumulates into a JSON **array** under the
+base key. Repeat the flag once per element:
+
+```bash
+# Builds {"queue_ids": ["<id-a>", "<id-b>"]}
+duvo api PUT /v1/agents/<id>/revisions/<rev>/integrations/<int>/queues \
+  -F "queue_ids[]=<id-a>" -F "queue_ids[]=<id-b>"
+```
+
+Each element is typed by the same rules as a scalar `-F` (so
+`-F "ids[]=1" -F "ids[]=2"` yields `[1, 2]`). A **single, non-`[]`**
+field never becomes an array — `-F queue_ids=<id>` sends the bare
+string, which a schema expecting an array will reject.
+
+**Don't mix `key` and `key[]` for the same base key.** Combining them
+(e.g. `-F tags=x -F "tags[]=y"`) is rejected with a `Conflicting field`
+error rather than silently dropping a value — pick one syntax. When in
+doubt, or for anything beyond a flat array of scalars, send the whole
+body with `--input -`:
+
+```bash
+echo '{"queue_ids":["<id-a>","<id-b>"]}' \
+  | duvo api PUT /v1/agents/<id>/revisions/<rev>/integrations/<int>/queues --input -
+```
+
 ## `--input` — raw JSON body
 
 When the request body doesn't decompose cleanly into key/value fields,

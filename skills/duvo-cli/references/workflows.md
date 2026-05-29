@@ -77,19 +77,74 @@ duvo runs respond "$run_id" --answer "approval=yes" --answer "reason=Looks fine"
 
 ## 4. Work with a case queue
 
-Create a queue, drop cases into it, and delegate them to a consumer
-agent.
+Create a queue, wire up the agents that produce and consume its cases,
+then drop cases in and let the consumer work them.
+
+### Queue roles: producer vs consumer
+
+A case queue connects two agent **roles**, and each role is an
+_integration linked to the queue_ — not just a trigger:
+
+- **Producer** — an agent with the `case-queue-producer` integration
+  linked to the queue. It **creates** cases when it runs.
+- **Consumer** — an agent with the `case-queue-consumer` integration
+  linked to the queue **and** an enabled **case trigger**. New cases
+  fire the consumer, which claims and resolves them.
+
+⚠️ **The trap:** a case trigger _without_ the consumer integration
+linked still fires the agent, but the run can't claim or resolve the
+case — so the run fails and the case ends up `failed` (after retries),
+and it keeps failing for **every** new case until you link the
+integration. The trigger also gets **auto-disabled the next time you
+promote a revision** whose live consumer slot doesn't consume the
+queue (`"Case trigger disabled: queue no longer consumed by live
+build"`), which can mask the root cause. The integration and the
+trigger must go together — `duvo queues link-agent --role consumer`
+does both in one step, which is exactly why it exists.
+
+The `case-queue-producer` / `case-queue-consumer` integrations are
+seeded per team (provider `default`) and appear in `duvo integrations
+list`.
+
+### Wire up producer and consumer agents
 
 ```bash
 # 1. Create the queue.
 queue=$(duvo queues create --name "Inbound invoices" --json | jq -r .queue.id)
 
-# 2. Add a single case.
+# 2. Producer: attaches case-queue-producer on the agent's live revision
+#    and maps the queue. The producer creates cases when it runs.
+duvo queues link-agent "$queue" --agent <producer-agent-id> --role producer
+
+# 3. Consumer: attaches case-queue-consumer, maps the queue, AND creates the
+#    case trigger. --enable-trigger starts it picking up cases immediately.
+duvo queues link-agent "$queue" --agent <consumer-agent-id> \
+  --role consumer --enable-trigger --concurrency 3
+
+# 4. Verify both ends are wired (watch the PROBLEMS column on either side).
+duvo queues agents "$queue"
+
+# Tear a binding back down — removes the queue from the role's slot; for
+# consumers it also removes the case trigger for that queue.
+duvo queues unlink-agent "$queue" --agent <consumer-agent-id> --role consumer
+```
+
+`link-agent` operates on the agent's **live revision** by default; pass
+`--revision <id>` to target a specific one. Without `--enable-trigger`
+the consumer's trigger is created **disabled** and won't pick up cases
+until enabled (`duvo agents case-triggers update`). To inspect or
+re-map a slot's linked queues directly, use `duvo revision-integrations
+queues list|set`.
+
+### Add and inspect cases
+
+```bash
+# Add a single case.
 duvo cases create --queue "$queue" \
   --title "INV-1042" \
   --data "Vendor: Acme; amount: 1240.00 USD; due: 2026-06-01"
 
-# 3. Add many cases from a JSON file (or stdin).
+# Add many cases from a JSON file (or stdin).
 cat > cases.json <<'JSON'
 [
   { "title": "INV-1043", "data": "Vendor: BetaCo; amount: 880.00 EUR" },
@@ -102,18 +157,22 @@ duvo cases create --queue "$queue" --from-file cases.json
 # Reading from stdin instead:
 echo '[{"title":"INV-1045"}]' | duvo cases create --queue "$queue" --from-file -
 
-# 4. Inspect cases.
+# Inspect cases.
 duvo cases list --queue "$queue" --status pending,processing
 duvo cases get <case-id>
 
-# 5. Delegate a batch to a consumer agent.
+# Delegate a batch to a consumer agent by hand (the trigger does this
+# automatically once the consumer is wired up above).
 duvo cases bulk-delegate --queue "$queue" \
   --agent <consumer-agent-id> \
   --ids "<id1>,<id2>,<id3>"
 
-# 6. Manage a label vocabulary on the queue.
+# Manage a label vocabulary on the queue.
 duvo queue-labels create --queue "$queue" --key priority --value high
 duvo cases labels assign <case-id> --queue "$queue" --label "priority=urgent"
+
+# Unassign a label by key=value (symmetric with assign) or by ID.
+duvo cases labels unlink <case-id> --queue "$queue" --label "priority=urgent"
 ```
 
 `bulk-*` operations accept 1-100 IDs at a time, comma-separated, via
