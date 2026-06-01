@@ -85,6 +85,7 @@ revision and the connections pinned to each slot.
 | `duvo revision-integrations connections unpin <connection-id> --agent <id> --revision <id> --integration <id> [-y] [--json]` | Unpin a connection from a slot.                                          |
 | `duvo revision-integrations queues list --agent <id> --revision <id> --integration <id> [--json]`                            | List the case queues linked to a case-queue integration slot.            |
 | `duvo revision-integrations queues set --agent <id> --revision <id> --integration <id> [--queue <id> …] [--json]`            | Replace the case queues linked to a slot (omit `--queue` to unlink all). |
+| `duvo revision-integrations case-queue-setup --agent <id> --revision <id> [--json]`                                          | Check that every case-queue slot on a revision points at a queue.        |
 
 ## Runs
 

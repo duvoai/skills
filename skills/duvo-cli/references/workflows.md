@@ -136,6 +136,31 @@ until enabled (`duvo agents case-triggers update`). To inspect or
 re-map a slot's linked queues directly, use `duvo revision-integrations
 queues list|set`.
 
+⚠️ **The other trap — attached but unmapped.** If you attach
+`case-queue-producer`/`case-queue-consumer` with
+`revision-integrations attach` but never map a queue to the slot, the
+integration looks present yet points at **no queue**. The run fails at
+runtime and nothing tells you the slot was empty. `link-agent` avoids
+this by attaching **and** mapping in one step; if you wire slots by hand
+with `attach`, always follow up with `revision-integrations queues set`.
+
+### Confirm the wiring (self-check)
+
+Before starting work, confirm every case-queue slot on the revision
+actually points at a queue:
+
+```bash
+duvo revision-integrations case-queue-setup \
+  --agent <agent-id> --revision <revision-id>
+```
+
+It returns each case-queue slot's `linked_queue_count` — **a slot
+reporting `0` is attached but maps to no queue and will fail at
+runtime.** Map a queue with `revision-integrations queues set` and
+re-check until every slot reports a non-zero count.
+`duvo queues agents "$queue"` surfaces the same problem from the queue
+side in its PROBLEMS column.
+
 ### Add and inspect cases
 
 ```bash
