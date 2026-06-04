@@ -231,6 +231,57 @@ files available to the run.
 | `duvo oauth mcp check --url <url> [--json]`                                                              | Probe an MCP server for OAuth Dynamic Client Registration support.                                |
 | `duvo oauth mcp authorize --url <url> --name <n> [--integration-type <type>] [--json]`                   | Start an OAuth-based connection with a remote MCP server via DCR. Prints the authorization URL.   |
 
+## Clarity
+
+Clarity commands auto-detect process version where possible. Legacy v1
+processes support only `overview`, `status`, `captures`, `capture`, and
+`export`. V2 snapshot and write commands require a Clarity v2 process.
+
+### Read and inspect
+
+| Command                                                                                    | Purpose                                                                                        |
+| ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `duvo clarity list [--limit <n>] [--offset <n>] [--search <text>] [--status <s>] [--json]` | List Clarity processes for the current team.                                                   |
+| `duvo clarity search <query> [--limit <n>] [--offset <n>] [--status <s>] [--json]`         | Search Clarity processes by name.                                                              |
+| `duvo clarity status <process-id> [--json]`                                                | Show process status, generation progress, selected version IDs, and health warnings.           |
+| `duvo clarity overview <process-id> [--current <selector>] [--proposal <selector>]`        | Show a summary-first process overview. Add `--json`, `--markdown`, or `--include-transcripts`. |
+| `duvo clarity versions <process-id> [--json]`                                              | List v2 current-process and transformation-proposal version histories.                         |
+| `duvo clarity current <process-id> [--snapshot <selector>] [--json]`                       | Read a v2 current-process snapshot.                                                            |
+| `duvo clarity proposal <process-id> [--snapshot <selector>] [--json]`                      | Read a v2 transformation-proposal snapshot.                                                    |
+| `duvo clarity compare <process-id> [--current <selector>] [--proposal <selector>]`         | Compare selected current-process and transformation-proposal snapshots.                        |
+| `duvo clarity captures <process-id> [--include-transcripts] [--json] [--csv]`              | List captures attached to a process.                                                           |
+| `duvo clarity capture <process-id> <capture-id> [--include-transcripts] [--json]`          | Read one capture attached to a process.                                                        |
+| `duvo clarity gaps <process-id> [--json]`                                                  | Group v2 proposal gaps and extra-capture requests by step.                                     |
+| `duvo clarity evidence <process-id> [--citation <id>] [--json]`                            | Print current-process evidence sources, or resolve one citation ID.                            |
+| `duvo clarity readiness <process-id> [--json]`                                             | Summarize v2 automation-readiness ratings.                                                     |
+| `duvo clarity facets <process-id> [--json]`                                                | Build structured cost, risk, lineage, and automation facets for agents and scripts.            |
+| `duvo clarity export <process-id> [--json] [--csv] [--include-transcripts]`                | Export Clarity context as Markdown, JSON, or CSV.                                              |
+| `duvo clarity doctor [process-id] [--json]`                                                | Check auth, API reachability, command availability, and optional process-level context health. |
+| `duvo clarity tools [--json]`                                                              | List the Clarity CLI tool map with commands and underlying public API endpoints.               |
+
+Snapshot selectors are `live`, `latest`, or an exact snapshot ID from
+`duvo clarity versions`.
+
+### Write and mutate
+
+| Command                                                                                                                    | Purpose                                                                                                                                                   |
+| -------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `duvo clarity generate-current-process <process-id> [--json]`                                                              | Start asynchronous generation for a new current-process snapshot.                                                                                         |
+| `duvo clarity generate-transformation-proposal <process-id> [--current-process-id <id>] [--regenerate-from <id>] [--json]` | Start transformation-proposal generation, anchored to a current snapshot or regenerated from an existing proposal. Pass only one of the two optional IDs. |
+| `duvo clarity promote-current-process <process-id> <snapshot-id> [--json]`                                                 | Promote a current-process snapshot to the live version shown for the process.                                                                             |
+| `duvo clarity promote-transformation-proposal <process-id> <proposal-id> [--json]`                                         | Promote a transformation-proposal snapshot to the live proposal.                                                                                          |
+| `duvo clarity revert-current-process <process-id> <snapshot-id> [--json]`                                                  | Delete a current-process snapshot when it should be reverted or removed.                                                                                  |
+| `duvo clarity revert-transformation-proposal <process-id> <proposal-id> [--json]`                                          | Delete a transformation-proposal snapshot when it should be reverted or removed.                                                                          |
+| `duvo clarity assign-extra-capture-request <process-id> <proposal-id> <request-id> [--user-id <id>] [--json]`              | Assign an extra-capture request to a team member with `--user-id`; omit it to unassign the request.                                                       |
+| `duvo clarity postprocess <process-id> <snapshot-type> <snapshot-id> [--json]`                                             | Re-run postprocessing for `current_process` or `transformation_proposal`.                                                                                 |
+| `duvo clarity build-automation <process-id> [--json]`                                                                      | Start automation generation from the latest transformation proposal.                                                                                      |
+| `duvo clarity stop-transformation-proposal <process-id> [--json]`                                                          | Stop an in-flight transformation-proposal generation job.                                                                                                 |
+| `duvo clarity create-invite-link <process-id> [--json]`                                                                    | Create or regenerate a Clarity interview invite link that can be sent to someone.                                                                         |
+| `duvo clarity import-artifact <process-id> <file> [--content-type <mime>] [--extra-capture-request-id <id>] [--json]`      | Import a local Miro SVG, XML, PNG, or JPEG export by creating a signed upload URL, uploading bytes, and completing the import.                            |
+
+Supported artifact import content types are `image/svg+xml`,
+`application/xml`, `text/xml`, `image/png`, and `image/jpeg`.
+
 ## Skills & plugins
 
 | Command                                                                                                                    | Purpose                                                              |

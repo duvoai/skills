@@ -320,7 +320,50 @@ duvo files rename --path "$file_path" --new-path policies/policy.md
 duvo files delete policies/policy.md -y
 ```
 
-## 9. Use `duvo api` for endpoints without a high-level command
+## 9. Work with a Clarity process
+
+Use `duvo clarity` when a user wants terminal access to Clarity
+processes, including importing Miro exports or sending interview links
+without opening the web UI.
+
+```bash
+# 1. Find the process and inspect its current state.
+process_id=$(
+  duvo clarity search "invoice approval" --json \
+  | jq -r '.processes[0].id'
+)
+duvo clarity overview "$process_id"
+duvo clarity versions "$process_id"
+
+# 2. Import a local Miro export into the process.
+duvo clarity import-artifact "$process_id" ./miro-process-map.svg
+
+# If the import is meant to fill an open extra-capture request, bind it:
+duvo clarity import-artifact "$process_id" ./exception-path.xml \
+  --extra-capture-request-id <request-id>
+
+# 3. Create an interview link and send the printed URL to the interviewee.
+duvo clarity create-invite-link "$process_id"
+
+# 4. Regenerate documentation after new source material is available.
+duvo clarity generate-current-process "$process_id"
+
+# When a new current-process snapshot exists, anchor a transformation
+# proposal to it. Pull the snapshot ID from `duvo clarity versions`.
+duvo clarity generate-transformation-proposal "$process_id" \
+  --current-process-id <current-snapshot-id>
+
+# 5. Promote snapshots after review.
+duvo clarity promote-current-process "$process_id" <current-snapshot-id>
+duvo clarity promote-transformation-proposal "$process_id" <proposal-snapshot-id>
+```
+
+For custom upload clients or artifact-chat workflows without a high-level
+CLI command, use `duvo api` against the public route directly. Prefer
+`import-artifact` for normal local files because it performs all three
+artifact-import steps in one command.
+
+## 10. Use `duvo api` for endpoints without a high-level command
 
 ```bash
 # Any GET with query params.
@@ -341,7 +384,7 @@ cat ./agent.json | duvo api POST /v1/agents --input -
 codes as the high-level commands — so scripts can mix `duvo agents
 create` and `duvo api POST …` freely.
 
-## 10. CI-friendly invocation
+## 11. CI-friendly invocation
 
 A handful of guarantees for scripts and CI pipelines:
 

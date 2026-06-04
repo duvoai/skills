@@ -10,7 +10,7 @@ description: >
 license: MIT
 metadata:
   author: duvoai
-  version: "1.0.2"
+  version: "1.0.3"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -151,7 +151,7 @@ The top-level groups are:
 - **Queues & cases** — `queues …`, `queue-labels …`, `cases …`
 - **Files & sandboxes** — `files …`, `sandboxes …`
 - **Connections & integrations** — `integrations …`, `connections …`, `oauth …`
-- **Clarity** — `clarity …` (read-only process search, versions, captures, gaps, evidence, facets, export, doctor)
+- **Clarity** — `clarity …` (process search, versions, captures, gaps, evidence, facets, export, generation, promotion, artifact imports, invite links, doctor)
 - **Skills & plugins** — `skills …`, `plugins …`
 - **Team** — `team get`, `team members`
 - **Low-level** — `api <method> <path>`
@@ -217,14 +217,22 @@ sandboxes …` stages files for a single run (`duvo runs start
   `duvo oauth native start <provider>` or `duvo oauth composio start
 …`, not by `duvo connections create` — the latter is only for
   user-provided MCP servers.
-- **Clarity is read-only in this CLI surface.** Start with
+- **Clarity has both read and explicit write commands.** Start with
   `duvo clarity overview <process-id>`, then use `versions`, `current`,
-  `proposal`, `compare`, `gaps`, `evidence`, `readiness`, or `facets` as
-  needed. Those v2-only commands require a Clarity v2 process; legacy v1
-  processes support only `overview`, `status`, `captures`, `capture`, and
-  `export`. Default output is compact; transcripts and media URLs are
-  included only when a JSON command explicitly passes
-  `--include-transcripts`.
+  `proposal`, `compare`, `gaps`, `evidence`, `readiness`, or `facets` to
+  understand the process. Use the write commands only when the user
+  actually wants to mutate Clarity state: generation, promotion, revert,
+  postprocessing, automation build, extra-capture assignment, invite
+  links, or Miro artifact imports. Those v2-only commands require a
+  Clarity v2 process; legacy v1 processes
+  support only `overview`, `status`, `captures`, `capture`, and `export`.
+  Default output is compact; transcripts and media URLs are included only
+  when a JSON command explicitly passes `--include-transcripts`.
+- **Clarity artifact imports use a two-phase API under the hood.** Use
+  `duvo clarity import-artifact <process-id> <file>` for local Miro SVG,
+  XML, PNG, or JPEG exports. It creates the signed URL, uploads bytes, and
+  completes the import. For custom upload clients or artifact-chat
+  workflows, use `duvo api` against the public route directly.
 
 ## When the CLI is the wrong tool
 
