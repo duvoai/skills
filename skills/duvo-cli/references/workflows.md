@@ -186,9 +186,9 @@ echo '[{"title":"INV-1045"}]' | duvo cases create --queue "$queue" --from-file -
 duvo cases list --queue "$queue" --status pending,processing
 duvo cases get <case-id>
 
-# Delegate a batch to a consumer agent by hand (the trigger does this
+# Re-process a batch on a consumer agent by hand (the trigger does this
 # automatically once the consumer is wired up above).
-duvo cases bulk-delegate --queue "$queue" \
+duvo cases bulk-reprocess --queue "$queue" \
   --agent <consumer-agent-id> \
   --ids "<id1>,<id2>,<id3>"
 
