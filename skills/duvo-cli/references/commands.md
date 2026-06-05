@@ -258,6 +258,8 @@ processes support only `overview`, `status`, `captures`, `capture`, and
 | `duvo clarity export <process-id> [--json] [--csv] [--include-transcripts]`                | Export Clarity context as Markdown, JSON, or CSV.                                              |
 | `duvo clarity doctor [process-id] [--json]`                                                | Check auth, API reachability, command availability, and optional process-level context health. |
 | `duvo clarity tools [--json]`                                                              | List the Clarity CLI tool map with commands and underlying public API endpoints.               |
+| `duvo clarity artifact-chat-conversations <process-id> --snapshot-kind <kind> [--json]`    | List artifact-chat conversations for a current-process or transformation-proposal view.        |
+| `duvo clarity artifact-chat-messages <process-id> <conversation-id> [--json]`              | Read messages for one artifact-chat conversation.                                              |
 
 Snapshot selectors are `live`, `latest`, or an exact snapshot ID from
 `duvo clarity versions`.
