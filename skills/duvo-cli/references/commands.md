@@ -8,6 +8,7 @@ authoritative.
 Global flags available everywhere:
 
 - `--profile <name>` — override the default profile for this invocation.
+- `--team <id>` — override the active team for this invocation (also settable via `DUVO_TEAM_ID`; API-key profiles reject this because the key is already scoped to a team).
 - `--version` — print the installed CLI version.
 - `--help` — print help for any command.
 
@@ -32,23 +33,53 @@ pass `-y` explicitly.
 
 ## Agents
 
-| Command                                                                                                                                                                                                        | Purpose                                                                                                |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `duvo agents list [--limit <n>] [--offset <n>] [--json]`                                                                                                                                                       | List agents on your team. `--limit` is 1-100 (default 20).                                             |
-| `duvo agents get <id> [--json]`                                                                                                                                                                                | Show details for one agent.                                                                            |
-| `duvo agents create [--name <n>] [--input <text>] [--config <path>] [--no-build] [--json]`                                                                                                                     | Create a new agent. Prompts for missing fields in a TTY. `--no-build` skips creating an initial build. |
-| `duvo agents update <id> [--name <n>] [--enable-slack\|--disable-slack] [--enable-microsoft-teams\|--disable-microsoft-teams] [--enable-agentic-memory\|--disable-agentic-memory] [--thread-id <id>] [--json]` | Update display name or delivery settings.                                                              |
-| `duvo agents schedules <agent-id> [--json]`                                                                                                                                                                    | List schedules you own for an agent.                                                                   |
+| Command                                                                                                                                                                                                        | Purpose                                                                                                                                  |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `duvo agents list [--limit <n>] [--offset <n>] [--json]`                                                                                                                                                       | List agents on your team. `--limit` is 1-100 (default 20).                                                                               |
+| `duvo agents get <id> [--json]`                                                                                                                                                                                | Show details for one agent.                                                                                                              |
+| `duvo agents create [--name <n>] [--input <text>] [--config <path>] [--model <model>] [--no-build] [--json]`                                                                                                   | Create a new agent. Prompts for missing fields in a TTY. `--model` picks the Claude model; `--no-build` skips creating an initial build. |
+| `duvo agents update <id> [--name <n>] [--enable-slack\|--disable-slack] [--enable-microsoft-teams\|--disable-microsoft-teams] [--enable-agentic-memory\|--disable-agentic-memory] [--thread-id <id>] [--json]` | Update display name or delivery settings.                                                                                                |
+| `duvo agents models [--json]`                                                                                                                                                                                  | List the LLM models available for agents. The MODEL value is what `--model` accepts.                                                     |
+| `duvo agents set-model <id> [--model <model>] [--json]`                                                                                                                                                        | Switch the Claude model used by an agent's latest revision. Interactive picker when `--model` is omitted in a TTY.                       |
+| `duvo agents delete <id> [-y] [--json]`                                                                                                                                                                        | Delete an agent. Active jobs are interrupted. Destructive — prompts for confirmation.                                                    |
+
+### Schedules (per agent)
+
+| Command                                                                                                                                                                                                                                                                                     | Purpose                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `duvo agents schedules list <agent-id> [--json]`                                                                                                                                                                                                                                            | List schedules you own for an agent (`duvo agents schedules <agent-id>` also works as an alias).                                                                                   |
+| `duvo agents schedules create <agent-id> --frequency <f> --timezone <tz> [--time <HH:MM>] [--day <day>] [--day-of-month <n>] [--cron <expr>] [--disabled] [--no-recurring] [--json]`                                                                                                        | Create a schedule. Frequencies: `hourly`, `daily`, `workday`, `weekly`, `monthly`, `custom`. `--cron` is required for `custom`; `--time` for `daily`/`workday`/`weekly`/`monthly`. |
+| `duvo agents schedules update <agent-id> <schedule-id> [--frequency <f>] [--timezone <tz>] [--time <HH:MM>] [--clear-time] [--day <day>] [--clear-day] [--day-of-month <n>] [--clear-day-of-month] [--cron <expr>] [--clear-cron] [--enable\|--disable] [--recurring\|--one-shot] [--json]` | Update schedule fields. Only supplied fields change.                                                                                                                               |
+| `duvo agents schedules delete <agent-id> <schedule-id> [-y] [--json]`                                                                                                                                                                                                                       | Delete a schedule. Destructive — prompts for confirmation.                                                                                                                         |
 
 ### Case triggers (per agent)
 
-| Command                                                                                                                                            | Purpose                                                                       |
-| -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `duvo agents case-triggers list <agent-id> [--json]`                                                                                               | List case triggers configured for an agent.                                   |
-| `duvo agents case-triggers get <agent-id> <trigger-id> [--json]`                                                                                   | Get a case trigger by ID.                                                     |
-| `duvo agents case-triggers create <agent-id> --queue <id> [--enabled] [--concurrency <n>] [--json]`                                                | Create a case trigger bound to a queue (created disabled unless `--enabled`). |
-| `duvo agents case-triggers update <agent-id> <trigger-id> [--queue <id>] [--enable\|--disable] [--concurrency <n>] [--clear-concurrency] [--json]` | Toggle, rebind, or rescale a trigger.                                         |
-| `duvo agents case-triggers delete <agent-id> <trigger-id> [-y] [--json]`                                                                           | Delete a case trigger.                                                        |
+| Command                                                                                                                                            | Purpose                                                                                                  |
+| -------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `duvo agents case-triggers list <agent-id> [--json]`                                                                                               | List case triggers configured for an agent.                                                              |
+| `duvo agents case-triggers get <agent-id> <trigger-id> [--json]`                                                                                   | Get a case trigger by ID.                                                                                |
+| `duvo agents case-triggers create <agent-id> --queue <id> [--enabled] [--concurrency <n>] [--json]`                                                | Create a case trigger bound to a queue (created disabled unless `--enabled`).                            |
+| `duvo agents case-triggers update <agent-id> <trigger-id> [--queue <id>] [--enable\|--disable] [--concurrency <n>] [--clear-concurrency] [--json]` | Toggle, rebind, or rescale a trigger.                                                                    |
+| `duvo agents case-triggers delete <agent-id> <trigger-id> [-y] [--json]`                                                                           | Delete a case trigger.                                                                                   |
+| `duvo agents case-triggers preview <agent-id> --queue <id> [--json]`                                                                               | Preview whether adding a case trigger for this agent would conflict with existing triggers on the queue. |
+
+### Event triggers (per agent)
+
+`duvo agents triggers …` manages event-driven triggers (email received, file uploaded, etc.) for an
+agent's connected integrations. The integration must already be connected.
+
+| Command                                                                                                                         | Purpose                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `duvo agents triggers list <agent-id> [--json]`                                                                                 | List the event triggers you own for an agent.                                                                                                         |
+| `duvo agents triggers set <agent-id> --integration <slug> --trigger-type <type> [--filter-config <json>] [--disabled] [--json]` | Create or update an event trigger. `--filter-config` is a JSON object with integration-specific filter settings. Created enabled unless `--disabled`. |
+| `duvo agents triggers types <agent-id> [--json]`                                                                                | List the trigger types available for an agent by integration — use this to discover valid `--integration` and `--trigger-type` values for `set`.      |
+
+### Agent memory
+
+| Command                                                  | Purpose                                                                                                              |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `duvo agents memory files <agent-id> [--json]`           | List the memory files stored for an agent (`duvo agents memory <agent-id>` also works as an alias).                  |
+| `duvo agents memory file-get <agent-id> <path> [--json]` | Print the contents of one memory file. Streams to stdout. Path is relative (e.g. `notes.md`, `context/customer.md`). |
 
 ## Agent folders
 
@@ -89,15 +120,16 @@ revision and the connections pinned to each slot.
 
 ## Runs
 
-| Command                                                                                                                                                                                  | Purpose                                                                                                                                        |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `duvo runs list [--limit <n>] [--offset <n>] [--sort-order <asc\|desc>] [--status <s>] [--agent <id>] [--user <id>] [--case-queue <id>] [--source <source>] [--search <query>] [--json]` | List runs for your team with filters.                                                                                                          |
-| `duvo runs get <id> [--json]`                                                                                                                                                            | Get an agent run by ID.                                                                                                                        |
-| `duvo runs start --agent <id> [--message <text>] [--sandbox-id <id>] [--webhook-url <url>] [--json]`                                                                                     | Start a new run. `--sandbox-id` pre-stages files; `--webhook-url` streams events.                                                              |
-| `duvo runs messages <id> [--limit <n>] [--offset <n>] [--json]`                                                                                                                          | List messages for a run.                                                                                                                       |
-| `duvo runs send-message <id> --message <text> [--json]`                                                                                                                                  | Post a follow-up message to an in-progress run.                                                                                                |
-| `duvo runs respond <run-id> [request-id] [--approve\|--deny\|--answer <question=answer>] [--json]`                                                                                       | Respond to a human-in-the-loop request. `request-id` defaults to the run's pending request. `--answer` is repeatable for multi-question forms. |
-| `duvo runs stop <id> [-y] [--json]`                                                                                                                                                      | Stop a running agent run. Destructive — prompts for confirmation.                                                                              |
+| Command                                                                                                                                                                                  | Purpose                                                                                                                                                      |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `duvo runs list [--limit <n>] [--offset <n>] [--sort-order <asc\|desc>] [--status <s>] [--agent <id>] [--user <id>] [--case-queue <id>] [--source <source>] [--search <query>] [--json]` | List runs for your team with filters.                                                                                                                        |
+| `duvo runs get <id> [--json]`                                                                                                                                                            | Get an agent run by ID.                                                                                                                                      |
+| `duvo runs start --agent <id> [--message <text>] [--sandbox-id <id>] [--webhook-url <url>] [--follow] [--json]`                                                                          | Start a new run. `--follow` polls for and streams messages until the run ends. `--sandbox-id` pre-stages files; `--webhook-url` posts events asynchronously. |
+| `duvo runs messages <id> [--limit <n>] [--offset <n>] [--follow] [--json]`                                                                                                               | List messages for a run. `--follow` polls for new messages until the run reaches a terminal state (streams NDJSON when combined with `--json`).              |
+| `duvo runs evaluation <run-id> [--agent <agent-id>] [--json]`                                                                                                                            | Get the latest evaluation for a run. The agent ID is resolved automatically when `--agent` is omitted. Also accessible as `duvo runs eval`.                  |
+| `duvo runs send-message <id> --message <text> [--json]`                                                                                                                                  | Post a follow-up message to an in-progress run.                                                                                                              |
+| `duvo runs respond <run-id> [request-id] [--approve\|--deny\|--answer <question=answer>] [--json]`                                                                                       | Respond to a human-in-the-loop request. `request-id` defaults to the run's pending request. `--answer` is repeatable for multi-question forms.               |
+| `duvo runs stop <id> [-y] [--json]`                                                                                                                                                      | Stop a running agent run. Destructive — prompts for confirmation.                                                                                            |
 
 ## Queues, queue labels, cases
 
@@ -302,10 +334,62 @@ Supported artifact import content types are `image/svg+xml`,
 
 ## Team
 
-| Command                                                                 | Purpose                                                         |
-| ----------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `duvo team get [--team <id>] [--json]`                                  | Get a team by ID (defaults to the team scoped to your API key). |
-| `duvo team members [--team <id>] [--limit <n>] [--offset <n>] [--json]` | List members of a team.                                         |
+| Command                                                                 | Purpose                                                                                                                                                                                                          |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `duvo team current [--json]`                                            | Get the team scoped to your credentials (shorthand for the common case).                                                                                                                                         |
+| `duvo team get [--team <id>] [--json]`                                  | Get a team by ID (defaults to the team scoped to your credentials).                                                                                                                                              |
+| `duvo team members [--team <id>] [--limit <n>] [--offset <n>] [--json]` | List members of a team.                                                                                                                                                                                          |
+| `duvo team use <team-id>`                                               | Set the default team for the active OAuth profile. Subsequent commands resolve to this team unless overridden by `--team` or `DUVO_TEAM_ID`. API-key profiles reject this (the key is already scoped to a team). |
+| `duvo teams list [--json]`                                              | List every team your credentials can act on. For API-key callers this returns one team; for OAuth callers it returns all teams you're a member of. Useful before `duvo team use`.                                |
+
+## Secrets (env-var secrets)
+
+`duvo secrets …` manages team-scoped env-var secrets that are injected into jobs at runtime.
+Secrets hold one or more `KEY=VALUE` pairs; the values are encrypted at rest and are never
+returned by the API. Attach secrets to specific revisions with `revision-secrets attach`.
+
+| Command                                                                                                                                                                         | Purpose                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `duvo secrets list [--json]`                                                                                                                                                    | List secrets visible to you — team-shared plus your personal entries.                                              |
+| `duvo secrets get <id> [--json]`                                                                                                                                                | Get a secret by ID. Returns metadata and env-var key names; values are never exposed.                              |
+| `duvo secrets create --name <n> --value KEY=VALUE [--value KEY=VALUE …] [--service-slug <slug>] [--shared] [--json]`                                                            | Create a secret. `--value` is repeatable. `--shared` creates a team-shared secret (requires manager role).         |
+| `duvo secrets update <id> [--name <n>] [--service-slug <slug>\|--clear-service-slug] [--shared\|--personal] [--set KEY=VALUE …] [--remove KEY …] [--rename OLD=NEW …] [--json]` | Update metadata or patch env vars. `--set` adds/overwrites; `--remove` deletes; `--rename` renames a key.          |
+| `duvo secrets delete <id> [-y] [--json]`                                                                                                                                        | Soft-delete a secret. Deleting a team-shared secret requires manager role. Destructive — prompts for confirmation. |
+
+## Credentials (browser logins)
+
+`duvo credentials …` manages browser logins (username + password and/or TOTP secret) that the
+browsing agent can use during jobs. Passwords and OTP secrets are encrypted at rest and are
+never returned by the API. Attach logins to specific revisions with `revision-logins attach`.
+
+| Command                                                                                                                            | Purpose                                                                                                                            |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `duvo credentials list [--domain <domain>] [--json]`                                                                               | List browser logins visible to you — team-shared plus your personal logins. Passwords and OTP secrets are never returned.          |
+| `duvo credentials get <id> [--json]`                                                                                               | Get a browser login by ID (passwords/OTP values are never exposed).                                                                |
+| `duvo credentials create --domain <domain> [--username <u>] [--password <p>] [--otp-secret <s>] [--shared] [--json]`               | Create a browser login. At least one of `--password` or `--otp-secret` is required. `--shared` creates team-shared (manager role). |
+| `duvo credentials update <id> [--domain <d>] [--username <u>] [--password <p>] [--otp-secret <s>] [--shared\|--personal] [--json]` | Update a browser login. Sharing toggles require manager role.                                                                      |
+| `duvo credentials delete <id> [-y] [--json]`                                                                                       | Delete a browser login. Destructive — prompts for confirmation.                                                                    |
+
+## Revision secrets & revision logins
+
+These commands attach/detach team secrets and browser logins to a specific revision so the jobs
+spawned from it get the injected values at runtime.
+
+### Revision secrets
+
+| Command                                                                               | Purpose                                                                  |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `duvo revision-secrets list --agent <id> --revision <id> [--json]`                    | List env-var secrets attached to a revision.                             |
+| `duvo revision-secrets attach --agent <id> --revision <id> --secret <id> [--json]`    | Attach a secret to a revision (its env vars will be injected into jobs). |
+| `duvo revision-secrets detach <secret-id> --agent <id> --revision <id> [-y] [--json]` | Detach a secret from a revision. Destructive — prompts for confirmation. |
+
+### Revision logins
+
+| Command                                                                                  | Purpose                                                                         |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `duvo revision-logins list --agent <id> --revision <id> [--json]`                        | List browser logins attached to a revision.                                     |
+| `duvo revision-logins attach --agent <id> --revision <id> --credential <id> [--json]`    | Attach a browser login to a revision so the browsing agent can use it.          |
+| `duvo revision-logins detach <credential-id> --agent <id> --revision <id> [-y] [--json]` | Detach a browser login from a revision. Destructive — prompts for confirmation. |
 
 ## Low-level
 

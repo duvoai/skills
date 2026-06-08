@@ -10,7 +10,7 @@ description: >
 license: MIT
 metadata:
   author: duvoai
-  version: "1.0.3"
+  version: "1.1.0"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -71,6 +71,7 @@ duvo --profile acme whoami       # one-off override for a single command
 - Profile: `--profile <name>` flag → `DUVO_PROFILE` env → `defaultProfile` in config.
 - Credential: `DUVO_API_KEY` env (bypasses the profile's stored credential lookup) → the profile's stored credential.
 - Base URL: `DUVO_API_BASE_URL` env → the profile's `apiBaseUrl` → `https://api.duvo.ai`.
+- Team: `--team <id>` flag → `DUVO_TEAM_ID` env → the OAuth profile's `defaultTeamId` (set via `duvo team use`) → the team derived from the active credential. API-key profiles are always pinned to the key's team and reject a different `--team` value.
 
 ## Reading the help
 
@@ -144,16 +145,17 @@ See `references/commands.md` for the full command tree with flags.
 The top-level groups are:
 
 - **Auth & profiles** — `login`, `logout`, `whoami`, `profiles …`
-- **Agents** — `agents …`, `agents case-triggers …`, `agents schedules`
+- **Agents** — `agents …`, `agents delete`, `agents models`, `agents set-model`, `agents case-triggers …`, `agents schedules …`, `agents triggers …`, `agents memory …`
 - **Agent folders** — `agent-folders …` (organize agents in a tree)
 - **Revisions** — `revisions …`, `revision-integrations …` (versioned configs)
-- **Runs** — `runs …` (start, get, message, stop, respond to HITL)
+- **Runs** — `runs …` (start, get, message, stop, respond to HITL, evaluation)
 - **Queues & cases** — `queues …`, `queue-labels …`, `cases …`
 - **Files & sandboxes** — `files …`, `sandboxes …`
 - **Connections & integrations** — `integrations …`, `connections …`, `oauth …`
+- **Secrets & credentials** — `secrets …` (env-var secrets), `credentials …` (browser logins), `revision-secrets …`, `revision-logins …`
 - **Clarity** — `clarity …` (process search, versions, captures, gaps, evidence, facets, export, generation, promotion, artifact imports, invite links, doctor)
 - **Skills & plugins** — `skills …`, `plugins …`
-- **Team** — `team get`, `team members`
+- **Team** — `team current`, `team get`, `team members`, `team use`, `teams list`
 - **Low-level** — `api <method> <path>`
 
 For end-to-end recipes (create an agent → start a run → respond to
@@ -167,15 +169,21 @@ the CLI rather than restating per-command:
 
 - `--profile <name>` is a **global** flag that overrides the default
   profile for that single invocation.
+- `--team <id>` is a **global** flag that overrides the resolved team
+  for that single invocation (OAuth profiles only; API-key profiles
+  reject a mismatched team).
 - `--json` is available on every command that hits the API and is the
   shape to use in scripts.
 - Destructive operations (`duvo logout`, `duvo profiles remove`,
-  `duvo runs stop`, `duvo agent-folders delete`, `duvo cases delete`,
-  `duvo cases clear`, `duvo cases bulk-delete`, `duvo skills delete`,
-  `duvo queues delete`, …) prompt for confirmation in a TTY and refuse
-  on a non-TTY stdin. Pass `-y` / `--yes` to skip the prompt — never
-  pipe `yes` into the CLI to bypass the prompt; it explicitly refuses
-  inferred consent from piped input.
+  `duvo runs stop`, `duvo agents delete`, `duvo agent-folders delete`,
+  `duvo cases delete`, `duvo cases clear`, `duvo cases bulk-delete`,
+  `duvo skills delete`, `duvo queues delete`, `duvo secrets delete`,
+  `duvo credentials delete`, `duvo revision-secrets detach`,
+  `duvo revision-logins detach`, `duvo agents schedules delete`, …)
+  prompt for confirmation in a TTY and refuse on a non-TTY stdin. Pass
+  `-y` / `--yes` to skip the prompt — never pipe `yes` into the CLI to
+  bypass the prompt; it explicitly refuses inferred consent from piped
+  input.
 - Exit codes: `0` success, `1` generic error, `2` auth error (missing
   or invalid key, unknown profile), `3` not found. Useful for CI
   scripts that want to branch on the failure mode.
@@ -204,19 +212,30 @@ the CLI rather than restating per-command:
   build) so it never blocks waiting for input.
 - **`cases create --from-file -`** reads JSON from stdin. The file (or
   stdin) is a single case object or an array of up to 100 cases. Each
-  case is `{ "title": "…", "data": "…", "labels": [{ "key": "…",
-"value": "…" }] }`. Labels with no `key` are tag-only labels.
+  case is `{ "title": "…", "data": "…", "labels": [{ "key": "…", "value": "…" }] }`.
+  Labels with no `key` are tag-only labels.
 - **Sandbox files vs team files.** `duvo files …` manages persistent
-  team files (visible in the Files surface in the UI); `duvo
-sandboxes …` stages files for a single run (`duvo runs start
---sandbox-id <id>`). Don't mix them.
+  team files (visible in the Files surface in the UI); `duvo sandboxes …`
+  stages files for a single run (`duvo runs start --sandbox-id <id>`). Don't mix them.
 - **Connections vs integrations.** `duvo integrations list` shows the
   team's catalog of integration types; `duvo connections list` shows
   the user's actual connected accounts (one per OAuth/credential
   flow). OAuth-based connections (Gmail, Slack, …) are started by
-  `duvo oauth native start <provider>` or `duvo oauth composio start
-…`, not by `duvo connections create` — the latter is only for
+  `duvo oauth native start <provider>` or `duvo oauth composio start …`,
+  not by `duvo connections create` — the latter is only for
   user-provided MCP servers.
+- **Secrets vs connections vs credentials.** Three separate stores:
+  `duvo secrets` holds env-var key/value pairs injected into jobs at
+  runtime; `duvo credentials` holds browser logins (domain + password
+  - optional TOTP) used by the browsing agent; `duvo connections`
+    holds OAuth/API-key connections to external services (Gmail, Slack,
+    custom MCP, …). They don’t overlap — attach secrets with
+    `revision-secrets`, logins with `revision-logins`, and connection
+    slots with `revision-integrations connections pin`.
+- **Multi-team OAuth profiles.** An OAuth login can belong to several
+  teams. Use `duvo teams list` to see all teams, then `duvo team use <id>`
+  to set the default, or `--team <id>` per-command. API-key
+  profiles are always single-team and reject `--team`.
 - **Clarity has both read and explicit write commands.** Start with
   `duvo clarity overview <process-id>`, then use `versions`, `current`,
   `proposal`, `compare`, `gaps`, `evidence`, `readiness`, or `facets` to

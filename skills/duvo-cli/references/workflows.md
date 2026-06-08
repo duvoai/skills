@@ -37,29 +37,35 @@ agent_id=$(
   | jq -r .agent.id
 )
 echo "Agent: $agent_id"
+```
 
-# Start a run with an initial message.
+**Option 1 — stream inline:** start the run and block until it finishes.
+
+```bash
+duvo runs start --agent "$agent_id" --message "Process today's queue." --follow
+```
+
+**Option 2 — capture ID, stream separately:** useful when you need the run ID for a later step.
+
+```bash
 run_id=$(
   duvo runs start --agent "$agent_id" --message "Process today's queue." --json \
   | jq -r .run.id
 )
+duvo runs messages "$run_id" --follow
+```
 
-# Poll the run until it reaches a terminal state.
-while :; do
-  status=$(duvo runs get "$run_id" --json | jq -r .run.status)
-  echo "Run $run_id: $status"
-  case "$status" in
-    completed|failed|interrupted) break ;;
-  esac
-  sleep 5
-done
+**Option 3 — process NDJSON programmatically:** `--follow --json` emits each message as a JSON object on its own line.
 
-# Inspect what happened.
-duvo runs messages "$run_id"
+```bash
+duvo runs start --agent "$agent_id" --message "Process today's queue." --follow --json \
+  | while IFS= read -r line; do
+      echo "$line" | jq -r '.text_content // empty'
+    done
 ```
 
 For event-driven workflows, pass `--webhook-url` to `runs start` and
-receive events asynchronously rather than polling.
+receive events asynchronously rather than polling or following.
 
 ## 3. Respond to a human-in-the-loop request
 
