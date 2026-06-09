@@ -1,18 +1,18 @@
-# SOP Examples
+# AOP Examples
 
-Three canonical, full-text SOPs. Use them as calibration anchors before returning a draft — your output should read like one of these.
+Three canonical, full-text AOPs. Use them as calibration anchors before returning a draft — your output should read like one of these.
 
 The examples are progressively more complex:
 
-1. **Standalone deep SOP** — a single Assignment that does its whole job in one Run, no queues.
-2. **Queue consumer with Human-in-the-Loop** — a consumer SOP with HITL gating and terminal closure.
-3. **Postpone-driven reminder step** — a producer+consumer SOP using the postpone-then-retry idiom.
+1. **Standalone deep AOP** — a single Agent that does its whole job in one Run, no queues.
+2. **Queue consumer with Human-in-the-Loop** — a consumer AOP with HITL gating and terminal closure.
+3. **Postpone-driven reminder step** — a producer+consumer AOP using the postpone-then-retry idiom.
 
 ---
 
-## Example 1 — Standalone deep SOP
+## Example 1 — Standalone deep AOP
 
-A single Assignment, triggered on a schedule (configured in Setup, outside the SOP). Runs end to end on each invocation. No queue, no handover.
+A single Agent, triggered on a schedule (configured in Setup, outside the AOP). Runs end to end on each invocation. No queue, no handover.
 
 ```markdown
 # GOAL
@@ -42,7 +42,7 @@ Generate the daily revenue summary for yesterday and post it to the leadership S
 
 # NOTES
 
-- All times in the SOP refer to Europe/Prague unless explicitly UTC.
+- All times in the AOP refer to Europe/Prague unless explicitly UTC.
 - The "Daily Revenue Reports" sheet must only be appended to, never overwritten.
 ```
 
@@ -58,7 +58,7 @@ What makes this excellent:
 
 ## Example 2 — Queue consumer with Human-in-the-Loop
 
-The Assignment is a queue consumer with the `case-queue-consumer` Connection. Each Run claims one case from the "Pending Refunds" queue and processes it end to end.
+The Agent is a queue consumer with the `case-queue-consumer` Connection. Each Run claims one case from the "Pending Refunds" queue and processes it end to end.
 
 ```markdown
 # GOAL
@@ -92,7 +92,7 @@ Process one refund request case end to end: validate it, approve or escalate, an
 
 What makes this excellent:
 
-- Step 1 is `claim_case` — non-negotiable for consumer SOPs.
+- Step 1 is `claim_case` — non-negotiable for consumer AOPs.
 - Every branch reaches a terminal call (`complete_case`, `fail_case`, or `postpone_case`).
 - HITL is a first-class step with a concrete prompt, not "use your judgment".
 - Concrete thresholds ($200, 90 days) — no fuzzy adverbs.
@@ -101,7 +101,7 @@ What makes this excellent:
 
 ## Example 3 — Postpone-driven reminder step
 
-Excerpt from a producer+consumer Assignment in a reminder chain. The Assignment claims a case from the "First Reminder" queue, waits 1 day on first pickup, then sends the reminder and advances the case to the next queue.
+Excerpt from a producer+consumer Agent in a reminder chain. The Agent claims a case from the "First Reminder" queue, waits 1 day on first pickup, then sends the reminder and advances the case to the next queue.
 
 ```markdown
 # GOAL

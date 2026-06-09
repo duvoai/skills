@@ -225,7 +225,7 @@ the CLI rather than restating per-command:
   not by `duvo connections create` — the latter is only for
   user-provided MCP servers.
 - **Secrets vs connections vs credentials.** Three separate stores:
-  `duvo secrets` holds env-var key/value pairs injected into jobs at
+  `duvo secrets` holds env-var key/value pairs injected into runs at
   runtime; `duvo credentials` holds browser logins (domain + password
   - optional TOTP) used by the browsing agent; `duvo connections`
     holds OAuth/API-key connections to external services (Gmail, Slack,
@@ -241,7 +241,7 @@ the CLI rather than restating per-command:
   `proposal`, `compare`, `gaps`, `evidence`, `readiness`, or `facets` to
   understand the process. Use the write commands only when the user
   actually wants to mutate Clarity state: generation, promotion, revert,
-  postprocessing, automation build, extra-capture assignment, invite
+  postprocessing, automation build, extra-capture agent, invite
   links, or Miro artifact imports. Those v2-only commands require a
   Clarity v2 process; legacy v1 processes
   support only `overview`, `status`, `captures`, `capture`, and `export`.
@@ -261,10 +261,10 @@ Steer users to a different surface in these cases:
   CLI's `runs get` / `runs messages` are point-in-time reads. Use
   `--webhook-url` on `runs start` to receive events asynchronously,
   or open the run in the web UI.
-- **They want to edit an SOP or agent configuration interactively.**
+- **They want to edit an AOP or agent configuration interactively.**
   `revisions create` and `revisions update` accept a config file, but
   composing the config by hand is painful. Direct them to the
-  Assignment editor in the web UI for anything beyond a small targeted
+  Agent editor in the web UI for anything beyond a small targeted
   patch.
 - **They want to run an agent in their own process rather than on
   Duvo.** That's not what the public API exposes; the CLI is a client
@@ -286,14 +286,14 @@ the final source of truth.
 
 ## See also
 
-- `sop-writer` — author or rewrite the SOP that ships in a Build (`duvo revisions create` / `duvo revisions update`).
-- `job-debugger` — diagnose a failed Run; pairs with `duvo runs get`, `duvo runs messages`, and `duvo revisions get` for API-mode reads.
-- `workflow-debugger` — audit an Assignment or workflow across many Runs; pairs with `duvo runs list`, `duvo queues agents`, and `duvo revisions get`.
+- `aop-writer` — author or rewrite the AOP that ships in a Build (`duvo revisions create` / `duvo revisions update`).
+- `run-debugger` — diagnose a failed Run; pairs with `duvo runs get`, `duvo runs messages`, and `duvo revisions get` for API-mode reads.
+- `workflow-debugger` — audit an Agent or workflow across many Runs; pairs with `duvo runs list`, `duvo queues agents`, and `duvo revisions get`.
 
 ## Resources
 
 - [Duvo](https://duvo.ai) — product website
-- [Duvo documentation](https://docs.duvo.ai) — concepts, building Assignments, Connections
+- [Duvo documentation](https://docs.duvo.ai) — concepts, building Agents, Connections
 - [Duvo API reference](https://docs.duvo.ai/api-reference) — every endpoint the CLI wraps
 - [`@duvoai/cli` on npm](https://www.npmjs.com/package/@duvoai/cli) — versions, install instructions, changelog
 - [Web app](https://app.duvo.ai) — interactive surface for everything the CLI scripts

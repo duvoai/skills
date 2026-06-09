@@ -41,7 +41,7 @@ pass `-y` explicitly.
 | `duvo agents update <id> [--name <n>] [--enable-slack\|--disable-slack] [--enable-microsoft-teams\|--disable-microsoft-teams] [--enable-agentic-memory\|--disable-agentic-memory] [--thread-id <id>] [--json]` | Update display name or delivery settings.                                                                                                |
 | `duvo agents models [--json]`                                                                                                                                                                                  | List the LLM models available for agents. The MODEL value is what `--model` accepts.                                                     |
 | `duvo agents set-model <id> [--model <model>] [--json]`                                                                                                                                                        | Switch the Claude model used by an agent's latest revision. Interactive picker when `--model` is omitted in a TTY.                       |
-| `duvo agents delete <id> [-y] [--json]`                                                                                                                                                                        | Delete an agent. Active jobs are interrupted. Destructive — prompts for confirmation.                                                    |
+| `duvo agents delete <id> [-y] [--json]`                                                                                                                                                                        | Delete an agent. Active runs are interrupted. Destructive — prompts for confirmation.                                                    |
 
 ### Schedules (per agent)
 
@@ -98,7 +98,7 @@ agent's connected integrations. The integration must already be connected.
 | `duvo revisions list --agent <id> [--limit <n>] [--offset <n>] [--json]`            | List revisions for an agent.                                            |
 | `duvo revisions get <revision-id> --agent <id> [--json]`                            | Get a revision by ID.                                                   |
 | `duvo revisions create --agent <id> --name <text> --config-file <path\|-> [--json]` | Create a revision from a config file. Pass `-` to read from stdin.      |
-| `duvo revisions update <revision-id> --agent <id> [--json]`                         | Update a revision's config (handover targets are derived from the SOP). |
+| `duvo revisions update <revision-id> --agent <id> [--json]`                         | Update a revision's config (handover targets are derived from the AOP). |
 | `duvo revisions promote <revision-id> --agent <id> [--description <text>] [--json]` | Promote a revision to the agent's live build.                           |
 
 ### Revision integrations
@@ -179,7 +179,7 @@ up to 100. Shape per case:
 ```json
 {
   "title": "Case title",
-  "data": "Optional free-form data passed to the assignment on claim",
+  "data": "Optional free-form data passed to the agent on claim",
   "labels": [{ "key": "priority", "value": "high" }, { "value": "urgent" }]
 }
 ```
@@ -328,7 +328,7 @@ Supported artifact import content types are `image/svg+xml`,
 | `duvo skills file-get <skill-id> <path> [--json]`                                                                          | Print the content of a file inside a skill.                          |
 | `duvo skills file-update <skill-id> <path> [--content <text>\|--content-file <path>] [--json]`                             | Update the content of a file inside a skill.                         |
 | `duvo skills download <skill-id> [--output <path>]`                                                                        | Download a custom skill as a ZIP.                                    |
-| `duvo skills assignments <skill-id> [--json]`                                                                              | List assignments whose live build references a skill.                |
+| `duvo skills assignments <skill-id> [--json]`                                                                              | List agents whose live build references a skill.                     |
 | `duvo skills generate --prompt <text> [--name <n>] [--json]`                                                               | Generate a `SKILL.md` from a prompt.                                 |
 | `duvo plugins list [--json]`                                                                                               | List plugins referenceable by name in a revision.                    |
 
@@ -359,7 +359,7 @@ returned by the API. Attach secrets to specific revisions with `revision-secrets
 ## Credentials (browser logins)
 
 `duvo credentials …` manages browser logins (username + password and/or TOTP secret) that the
-browsing agent can use during jobs. Passwords and OTP secrets are encrypted at rest and are
+browsing agent can use during runs. Passwords and OTP secrets are encrypted at rest and are
 never returned by the API. Attach logins to specific revisions with `revision-logins attach`.
 
 | Command                                                                                                                            | Purpose                                                                                                                            |
@@ -372,7 +372,7 @@ never returned by the API. Attach logins to specific revisions with `revision-lo
 
 ## Revision secrets & revision logins
 
-These commands attach/detach team secrets and browser logins to a specific revision so the jobs
+These commands attach/detach team secrets and browser logins to a specific revision so the runs
 spawned from it get the injected values at runtime.
 
 ### Revision secrets
