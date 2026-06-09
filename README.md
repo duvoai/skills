@@ -5,7 +5,7 @@
 
 Official [agent skills](https://skills.sh) for [Duvo](https://duvo.ai) — the AI platform that maps your real operations, designs the better version, and runs them across your existing systems.
 
-These skills teach your coding agent — Claude Code, Codex, Cursor, and other compatible tools — to operate Duvo directly: manage agents, debug failed Jobs, and write the SOPs that drive them, all without leaving your editor or terminal.
+These skills teach your coding agent — Claude Code, Codex, Cursor, and other compatible tools — to operate Duvo directly: manage Agents, debug failed Runs, and write the AOPs that drive them, all without leaving your editor or terminal.
 
 ## Quickstart
 
@@ -28,7 +28,7 @@ duvo login
 duvo whoami
 ```
 
-Then just ask your agent — for example: *"Why did Job `job_abc123` fail?"*, *"Rewrite this SOP to be clearer"*, or *"List my failed jobs from yesterday"*.
+Then just ask your agent — for example: *"Why did Run `run_abc123` fail?"*, *"Rewrite this AOP to be clearer"*, or *"List my failed runs from yesterday"*.
 
 ### Install a specific skill
 
@@ -54,15 +54,20 @@ npx skills add duvoai/skills --agent cursor
 npx skills add duvoai/skills --agent claude-code codex cursor
 ```
 
+### Update installed skills
+
+Skills don't auto-update — run `npx skills update` to pull the latest versions.
+
 ## Available skills
 
 Each skill is self-contained — install the whole set or just the one you need.
 
 | Skill | Description |
 | --- | --- |
-| **duvo-cli** | Drive the Duvo platform from the terminal via the `duvo` CLI (`@duvoai/cli`) — manage agents, runs, cases, queues, files, skills, and connections, or hit any endpoint with `duvo api`. |
-| **sop-writer** | Draft, rewrite, or critique a Duvo Assignment SOP, returning a single markdown document in the canonical GOAL / STEPS / NOTES shape. |
-| **job-debugger** | Investigate why a Duvo Job failed or produced the wrong outcome — reads the Job transcript and active Build, names the root cause from a fixed failure-mode taxonomy, and proposes one concrete fix. |
+| **duvo-cli** | Drive the Duvo platform from the terminal via the `duvo` CLI (`@duvoai/cli`) — manage agents, runs, cases, queues, files, skills, connections, and Clarity processes, or hit any endpoint with `duvo api`. |
+| **aop-writer** | Draft, rewrite, or critique a Duvo Agent AOP, returning a single markdown document in the canonical GOAL / STEPS / NOTES shape. |
+| **run-debugger** | Investigate why a Duvo Run failed or produced the wrong outcome — reads the Run transcript and active Build, names the root cause from a fixed failure-mode taxonomy, and proposes one concrete fix. |
+| **workflow-debugger** | Audit a Duvo Agent — or a multi-Agent workflow connected by a Queue — across many Runs to find systemic inefficiencies and quality issues, then recommend concrete AOP and architecture changes. |
 
 ## Learn more
 
