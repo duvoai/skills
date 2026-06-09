@@ -17,11 +17,11 @@ metadata:
 
 ## What is Duvo?
 
-[Duvo](https://duvo.ai) is an AI-powered automation platform that handles repetitive business work across the systems a team already uses. Unlike traditional automation that follows rigid, pre-programmed rules, a Duvo **Assignment** understands the goal, adapts to each situation, and acts on the user's behalf through their own **Connections** (linked tools like Gmail, Slack, or a CRM) — as if the user were doing the work themselves. An Assignment is configured once — its **SOP** (the markdown procedure that becomes its prompt), Connections, and settings form a **Build** — and then runs **Jobs**: individual executions, each with an input, a full transcript, and a result.
+[Duvo](https://duvo.ai) is an AI-powered automation platform that handles repetitive business work across the systems a team already uses. Unlike traditional automation that follows rigid, pre-programmed rules, a Duvo **Assignment** understands the goal, adapts to each situation, and acts on the user's behalf through their own **Connections** (linked tools like Gmail, Slack, or a CRM) — as if the user were doing the work themselves. An Assignment is configured once — its **SOP** (the markdown procedure that becomes its prompt), Connections, and settings form a **Build** — and then runs **Runs**: individual executions, each with an input, a full transcript, and a result.
 
 ## What an SOP is in Duvo
 
-An SOP is the instruction document attached to an Assignment. At Job-start time it is concatenated into the Assignment's prompt, so its quality directly determines how the Assignment behaves on every Job — against real Connections, with real escalation consequences. You are not writing documentation for a human reader; you are writing operational instructions that an LLM-driven Assignment will execute on live data.
+An SOP is the instruction document attached to an Assignment. At Run-start time it is concatenated into the Assignment's prompt, so its quality directly determines how the Assignment behaves on every Run — against real Connections, with real escalation consequences. You are not writing documentation for a human reader; you are writing operational instructions that an LLM-driven Assignment will execute on live data.
 
 Treat that downstream effect as the constraint on every word you write.
 
@@ -41,7 +41,7 @@ Do **not** create separate `PREREQUISITES`, `ERROR HANDLING`, `DATA HANDLING`, `
 
 ## Voice
 
-Outcome-focused, transparent, written for a non-engineer ops manager. Use Duvo terminology (Assignment, Job, SOP, Connection — not agent, task, run, integration). Imperative steps. Concrete thresholds, not fuzzy adverbs. See `references/sop-voice.md` for the full rules and worked examples.
+Outcome-focused, transparent, written for a non-engineer ops manager. Use Duvo terminology (Assignment, Run, SOP, Connection — not agent, task, job, integration). Imperative steps. Concrete thresholds, not fuzzy adverbs. See `references/sop-voice.md` for the full rules and worked examples.
 
 ## Patterns that produce excellent SOPs
 
@@ -122,7 +122,7 @@ Walk through this list once on your draft. Fix anything that fails before return
 - [ ] Every step is an imperative business action; tools referenced by Connection name.
 - [ ] Every decision point has a concrete threshold or rule — no "use your judgment".
 - [ ] Every branch terminates: queue Assignments end in a case lifecycle tool; standalone Assignments end in a concrete action.
-- [ ] Duvo terminology used consistently (Assignment, Job, SOP, Connection, Files, Login, Start Work, Setup).
+- [ ] Duvo terminology used consistently (Assignment, Run, SOP, Connection, Files, Login, Start Work, Setup).
 - [ ] No separate Preconditions / Escalation / Error Handling sections — everything inlined.
 - [ ] No hardcoded team-specific data that should live in Files or Setup.
 - [ ] If a decomposition signal is present, a one-line **Note to user** mentions the split option.
@@ -131,14 +131,14 @@ See `references/sop-examples.md` for canonical worked examples to calibrate agai
 
 ## See also
 
-- `job-debugger` — when a Job ran with an SOP and failed, start there to diagnose the root cause; it will hand off to this skill if the fix is an SOP rewrite.
-- `workflow-debugger` — audits an Assignment across many Jobs; hands off here when a systemic fix is an SOP change.
+- `job-debugger` — when a Run ran with an SOP and failed, start there to diagnose the root cause; it will hand off to this skill if the fix is an SOP rewrite.
+- `workflow-debugger` — audits an Assignment across many Runs; hands off here when a systemic fix is an SOP change.
 - `duvo-cli` — once the SOP is finalized, `duvo revisions create` / `duvo revisions update` ships it from the terminal.
 
 ## Resources
 
 - [Duvo](https://duvo.ai) — product website
 - [Duvo documentation](https://docs.duvo.ai) — building Assignments, SOPs, Connections, queues
-- [Web app](https://app.duvo.ai) — author Assignments and watch Jobs in the browser
+- [Web app](https://app.duvo.ai) — author Assignments and watch Runs in the browser
 - [Duvo CLI (`@duvoai/cli`)](https://www.npmjs.com/package/@duvoai/cli) — script SOP-driven Assignments from the terminal; pairs with the `duvo-cli` skill
 - [Public skill repository](https://github.com/duvoai/skills) — the MIT-licensed community release of this skill, packaged for installation in third-party Claude Code setups

@@ -106,17 +106,17 @@ agent's connected integrations. The integration must already be connected.
 `duvo revision-integrations …` manages the integration slots on a
 revision and the connections pinned to each slot.
 
-| Command                                                                                                                      | Purpose                                                                  |
-| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `duvo revision-integrations list --agent <id> --revision <id> [--json]`                                                      | List integrations attached to a revision.                                |
-| `duvo revision-integrations attach --agent <id> --revision <id> --integration <slug> […] [--json]`                           | Attach one or more integrations to a revision.                           |
-| `duvo revision-integrations remove <integration-id> --agent <id> --revision <id> [-y] [--json]`                              | Remove an integration slot from a revision.                              |
-| `duvo revision-integrations connections list --agent <id> --revision <id> --integration <id> [--json]`                       | List your pinned connections for a slot.                                 |
-| `duvo revision-integrations connections pin <connection-id> --agent <id> --revision <id> --integration <id> [--json]`        | Pin one of your connections to a revision's integration slot.            |
-| `duvo revision-integrations connections unpin <connection-id> --agent <id> --revision <id> --integration <id> [-y] [--json]` | Unpin a connection from a slot.                                          |
-| `duvo revision-integrations queues list --agent <id> --revision <id> --integration <id> [--json]`                            | List the case queues linked to a case-queue integration slot.            |
-| `duvo revision-integrations queues set --agent <id> --revision <id> --integration <id> [--queue <id> …] [--json]`            | Replace the case queues linked to a slot (omit `--queue` to unlink all). |
-| `duvo revision-integrations case-queue-setup --agent <id> --revision <id> [--json]`                                          | Check that every case-queue slot on a revision points at a queue.        |
+| Command                                                                                                                      | Purpose                                                             |
+| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `duvo revision-integrations list --agent <id> --revision <id> [--json]`                                                      | List integrations attached to a revision.                           |
+| `duvo revision-integrations attach --agent <id> --revision <id> --integration <slug> […] [--json]`                           | Attach one or more integrations to a revision.                      |
+| `duvo revision-integrations remove <integration-id> --agent <id> --revision <id> [-y] [--json]`                              | Remove an integration slot from a revision.                         |
+| `duvo revision-integrations connections list --agent <id> --revision <id> --integration <id> [--json]`                       | List your pinned connections for a slot.                            |
+| `duvo revision-integrations connections pin <connection-id> --agent <id> --revision <id> --integration <id> [--json]`        | Pin one of your connections to a revision's integration slot.       |
+| `duvo revision-integrations connections unpin <connection-id> --agent <id> --revision <id> --integration <id> [-y] [--json]` | Unpin a connection from a slot.                                     |
+| `duvo revision-integrations queues list --agent <id> --revision <id> --integration <id> [--json]`                            | List the queues linked to a queue integration slot.                 |
+| `duvo revision-integrations queues set --agent <id> --revision <id> --integration <id> [--queue <id> …] [--json]`            | Replace the queues linked to a slot (omit `--queue` to unlink all). |
+| `duvo revision-integrations case-queue-setup --agent <id> --revision <id> [--json]`                                          | Check that every queue slot on a revision points at a queue.        |
 
 ## Runs
 
@@ -133,15 +133,15 @@ revision and the connections pinned to each slot.
 
 ## Queues, queue labels, cases
 
-### Case queues
+### Queues
 
 | Command                                                                                                                                        | Purpose                                                                                                                                                       |
 | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `duvo queues list [--limit <n>] [--offset <n>] [--json]`                                                                                       | List case queues.                                                                                                                                             |
+| `duvo queues list [--limit <n>] [--offset <n>] [--json]`                                                                                       | List queues.                                                                                                                                                  |
 | `duvo queues get <id> [--json]`                                                                                                                | Get a queue by ID.                                                                                                                                            |
 | `duvo queues create --name <name> [--description <text>] [--folder-id <id>] [--json]`                                                          | Create a queue.                                                                                                                                               |
 | `duvo queues update <id> [--name <n>] [--description <text>\|--clear-description] [--folder-id <id>\|--clear-folder] [--json]`                 | Update a queue.                                                                                                                                               |
-| `duvo queues delete <id> [-y] [--json]`                                                                                                        | Delete a queue. Interrupts running jobs and removes all cases.                                                                                                |
+| `duvo queues delete <id> [-y] [--json]`                                                                                                        | Delete a queue. Interrupts active runs and removes all cases.                                                                                                 |
 | `duvo queues agents <queue-id> [--json]`                                                                                                       | List producer/consumer agents bound to a queue.                                                                                                               |
 | `duvo queues link-agent <queue-id> --agent <id> --role <producer\|consumer> [--enable-trigger] [--concurrency <n>] [--revision <id>] [--json]` | Link an agent to a queue in a role. Attaches the case-queue integration on the live revision and maps the queue; for consumers also creates the case trigger. |
 | `duvo queues unlink-agent <queue-id> --agent <id> --role <producer\|consumer> [--revision <id>] [--json]`                                      | Reverse of `link-agent`: unmaps the queue from the role's slot; for consumers also removes the case trigger for that queue.                                   |
@@ -162,12 +162,12 @@ revision and the connections pinned to each slot.
 | `duvo cases list --queue <id> [--limit <n>] [--offset <n>] [--status <list>] [--search <text>] [--sort-by <field>] [--sort-order <asc\|desc>] [--json]` | List cases in a queue with filters.                                                                                           |
 | `duvo cases get <id> [--json]`                                                                                                                          | Get a case by ID with its event history.                                                                                      |
 | `duvo cases create --queue <id> [--title <text>] [--data <text>] [--label <key=value>] [--from-file <path\|->] [--json]`                                | Create one case (with `--title`) or up to 100 (with `--from-file`).                                                           |
-| `duvo cases delete <id> [-y] [--json]`                                                                                                                  | Delete a case. Interrupts associated running jobs.                                                                            |
+| `duvo cases delete <id> [-y] [--json]`                                                                                                                  | Delete a case. Interrupts associated active runs.                                                                             |
 | `duvo cases clear --queue <id> [-y] [--json]`                                                                                                           | Delete every case in a queue.                                                                                                 |
 | `duvo cases bulk-delete --queue <id> --ids <list> [-y] [--json]`                                                                                        | Delete multiple cases (1-100, comma-separated IDs).                                                                           |
 | `duvo cases bulk-reprocess --queue <id> --agent <id> --ids <list> [-y] [--json]`                                                                        | Re-process cases on a queue consumer agent (interrupts active runs).                                                          |
 | `duvo cases bulk-update-status --queue <id> --ids <list> --status <completed\|failed> [-y] [--json]`                                                    | Bulk-update case statuses.                                                                                                    |
-| `duvo cases runs <case-id> [--json]`                                                                                                                    | List jobs that have worked on a case.                                                                                         |
+| `duvo cases runs <case-id> [--json]`                                                                                                                    | List runs that have worked on a case.                                                                                         |
 | `duvo cases runs recent-messages <case-id> <run-id> [--json]`                                                                                           | Recent messages for one run on a case.                                                                                        |
 | `duvo cases labels list <case-id> --queue <id> [--json]`                                                                                                | List labels assigned to a case.                                                                                               |
 | `duvo cases labels assign <case-id> --queue <id> --label <"key=value"\|"value"> [--label …] [--json]`                                                   | Assign one or more labels to a case (repeatable).                                                                             |
@@ -187,7 +187,7 @@ up to 100. Shape per case:
 Labels are `{"key": "…", "value": "…"}` — omit `key` (or set it to
 `""`) for a tag-only label. Pass `-` as the path to read from stdin.
 
-### Case-queue gotchas
+### Queue gotchas
 
 - **Trigger-enable flag differs by command.** `duvo agents case-triggers
 create` takes `--enabled`; `duvo agents case-triggers update` takes
@@ -344,7 +344,7 @@ Supported artifact import content types are `image/svg+xml`,
 
 ## Secrets (env-var secrets)
 
-`duvo secrets …` manages team-scoped env-var secrets that are injected into jobs at runtime.
+`duvo secrets …` manages team-scoped env-var secrets that are injected into runs at runtime.
 Secrets hold one or more `KEY=VALUE` pairs; the values are encrypted at rest and are never
 returned by the API. Attach secrets to specific revisions with `revision-secrets attach`.
 
@@ -380,7 +380,7 @@ spawned from it get the injected values at runtime.
 | Command                                                                               | Purpose                                                                  |
 | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | `duvo revision-secrets list --agent <id> --revision <id> [--json]`                    | List env-var secrets attached to a revision.                             |
-| `duvo revision-secrets attach --agent <id> --revision <id> --secret <id> [--json]`    | Attach a secret to a revision (its env vars will be injected into jobs). |
+| `duvo revision-secrets attach --agent <id> --revision <id> --secret <id> [--json]`    | Attach a secret to a revision (its env vars will be injected into runs). |
 | `duvo revision-secrets detach <secret-id> --agent <id> --revision <id> [-y] [--json]` | Detach a secret from a revision. Destructive — prompts for confirmation. |
 
 ### Revision logins

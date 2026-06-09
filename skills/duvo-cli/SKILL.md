@@ -287,8 +287,8 @@ the final source of truth.
 ## See also
 
 - `sop-writer` — author or rewrite the SOP that ships in a Build (`duvo revisions create` / `duvo revisions update`).
-- `job-debugger` — diagnose a failed Job; pairs with `duvo runs get`, `duvo runs messages`, and `duvo revisions get` for API-mode reads.
-- `workflow-debugger` — audit an Assignment or workflow across many Jobs; pairs with `duvo runs list`, `duvo queues agents`, and `duvo revisions get`.
+- `job-debugger` — diagnose a failed Run; pairs with `duvo runs get`, `duvo runs messages`, and `duvo revisions get` for API-mode reads.
+- `workflow-debugger` — audit an Assignment or workflow across many Runs; pairs with `duvo runs list`, `duvo queues agents`, and `duvo revisions get`.
 
 ## Resources
 

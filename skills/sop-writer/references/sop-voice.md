@@ -1,6 +1,6 @@
 # SOP Voice
 
-These rules govern SOP body text — the operational instructions an Assignment executes at Job-runtime. SOPs are stricter than general product copy: the audience is an LLM driving real Connections, not a person reading the UI.
+These rules govern SOP body text — the operational instructions an Assignment executes at Run-runtime. SOPs are stricter than general product copy: the audience is an LLM driving real Connections, not a person reading the UI.
 
 ## Outcome-focused
 
@@ -32,7 +32,7 @@ Use Duvo's nouns. Never substitute.
 | Use        | Not                            |
 | ---------- | ------------------------------ |
 | Assignment | agent, AI teammate, bot        |
-| Job        | task, run, execution           |
+| Run        | task, job, execution           |
 | SOP        | instructions, prompt, playbook |
 | Connection | integration, account           |
 | Files      | knowledge base, documents      |

@@ -8,16 +8,16 @@ The case lifecycle tools are platform primitives whose **names matter to the run
 
 Used by Assignments with the `case-queue-producer` Connection.
 
-- **`add_cases`** — enqueue one or more cases (1–100 per call). Each case has a `title` (required), and optional `data` and `labels`. Always batch when producing multiple cases in one Job; the platform expects up to 100 per call.
+- **`add_cases`** — enqueue one or more cases (1–100 per call). Each case has a `title` (required), and optional `data` and `labels`. Always batch when producing multiple cases in one Run; the platform expects up to 100 per call.
 - **`list_cases`** — query an existing queue with filters (`title_search`, `status`, etc.). Use as a dedup helper before `add_cases` when the producer runs frequently enough to risk duplicates.
 
-A producer SOP's terminal step is the `add_cases` call (or a no-op if there is nothing to enqueue this Job). Producers do not call `claim_case` / `complete_case`.
+A producer SOP's terminal step is the `add_cases` call (or a no-op if there is nothing to enqueue this Run). Producers do not call `claim_case` / `complete_case`.
 
 ## Consumer tools
 
 Used by Assignments with the `case-queue-consumer` Connection. A consumer SOP processes one claimed case from start to finish.
 
-- **`claim_case`** — fetch the case for this Job (and atomically claim it, if not already bound at Job start). **MUST be step 1** of a consumer SOP on the initial run, because case data is not injected into the prompt automatically. On a follow-up message in the same Job, skip this step — the case is already bound. A Job can only claim one case in its lifetime.
+- **`claim_case`** — fetch the case for this Run (and atomically claim it, if not already bound at Run start). **MUST be step 1** of a consumer SOP on the initial run, because case data is not injected into the prompt automatically. On a follow-up message in the same Run, skip this step — the case is already bound. A Run can only claim one case in its lifetime.
 - **`update_case`** — write `title`, `data`, or `labels` back to the in-flight case. Add an `update_case` step only where the process needs to record progress, intermediate findings, or state that must survive a `postpone_case`.
 - **`postpone_case`** — release the case and schedule a re-claim. The `postpone_to` parameter accepts a relative duration (`"2h"`, `"1d"`, `"1w"`) or an ISO timestamp. Use only for cases that _can_ complete later (waiting on a response, an SLA, a rate limit). Do NOT postpone for permanent or environment issues — use `fail_case` instead.
 - **`complete_case`** — terminal success. Mark the case done after the SOP's work is finished.
@@ -75,7 +75,7 @@ The `handover` Connection itself is added automatically at runtime — do not li
 - **Using `postpone_case` for permanent issues.** Permanent issues bury the queue under cases that will never resolve — use `fail_case`.
 - **Calling `complete_case` and `request_handover` in the same branch.** Pick one.
 - **Updating the case only at the end.** Update as you go — `update_case` writes survive a postpone or handover, so they are how the next Assignment gets context.
-- **Looping inside the SOP** ("for each pending invoice in the queue"). One Job, one case. The platform iterates.
+- **Looping inside the SOP** ("for each pending invoice in the queue"). One Run, one case. The platform iterates.
 
 ## See also
 

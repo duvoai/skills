@@ -81,14 +81,14 @@ duvo runs respond "$run_id" --answer "approval=yes" --answer "reason=Looks fine"
 
 `--answer` is repeatable for multi-question request types.
 
-## 4. Work with a case queue
+## 4. Work with a queue
 
 Create a queue, wire up the agents that produce and consume its cases,
 then drop cases in and let the consumer work them.
 
 ### Queue roles: producer vs consumer
 
-A case queue connects two agent **roles**, and each role is an
+A queue connects two agent **roles**, and each role is an
 _integration linked to the queue_ — not just a trigger:
 
 - **Producer** — an agent with the `case-queue-producer` integration

@@ -4,7 +4,7 @@ Three canonical, full-text SOPs. Use them as calibration anchors before returnin
 
 The examples are progressively more complex:
 
-1. **Standalone deep SOP** — a single Assignment that does its whole job in one Job, no queues.
+1. **Standalone deep SOP** — a single Assignment that does its whole job in one Run, no queues.
 2. **Queue consumer with Human-in-the-Loop** — a consumer SOP with HITL gating and terminal closure.
 3. **Postpone-driven reminder step** — a producer+consumer SOP using the postpone-then-retry idiom.
 
@@ -58,7 +58,7 @@ What makes this excellent:
 
 ## Example 2 — Queue consumer with Human-in-the-Loop
 
-The Assignment is a queue consumer with the `case-queue-consumer` Connection. Each Job claims one case from the "Pending Refunds" queue and processes it end to end.
+The Assignment is a queue consumer with the `case-queue-consumer` Connection. Each Run claims one case from the "Pending Refunds" queue and processes it end to end.
 
 ```markdown
 # GOAL
