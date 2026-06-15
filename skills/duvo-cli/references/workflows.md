@@ -167,6 +167,54 @@ re-check until every slot reports a non-zero count.
 `duvo queues agents "$queue"` surfaces the same problem from the queue
 side in its PROBLEMS column.
 
+`case-queue-setup` checks **queue slots only** — it says nothing about
+the agent's other integrations. If the revision also uses OAuth or
+user-provided integrations (HubSpot, Gong, Slack, …), verify those
+separately: every such slot needs a pinned connection (see the
+checklist below and workflow 7).
+
+### Setup checklist — run before declaring the agent ready
+
+A case-queue agent is **not** set up until every line below passes.
+Don't report success on attach/create exit codes alone — the failure
+modes here are all silent at setup time and only surface as failed
+runs later.
+
+```bash
+agent=<agent-id>
+# The live revision is the one runs actually use — verify that one,
+# not whatever draft you happen to have edited last.
+revision=$(
+  duvo revisions list --agent "$agent" --json \
+  | jq -r '.builds[] | select(.status == "live") | .id'
+)
+
+# 1. Every case-queue slot points at a queue (no linked_queue_count: 0).
+duvo revision-integrations case-queue-setup --agent "$agent" --revision "$revision"
+
+# 2. Every OAuth / user-provided slot has ≥ 1 pinned connection.
+#    List the slots, then check each non-default slot's connections.
+duvo revision-integrations list --agent "$agent" --revision "$revision" --json
+duvo revision-integrations connections list \
+  --agent "$agent" --revision "$revision" --integration <slot-id> --json
+# → an empty connections array means the slot will fail at runtime: pin
+#   one with `duvo revision-integrations connections pin` (workflow 7).
+#   If the user has no connection of that type at all
+#   (`duvo connections list --type <slug>` is empty), stop and tell them
+#   to connect the account first — you cannot pin what doesn't exist.
+
+# 3. Consumer agents: the case trigger exists and is enabled.
+duvo agents case-triggers list "$agent"
+
+# 4. Both ends look right from the queue side (PROBLEMS column empty).
+duvo queues agents <queue-id>
+
+# 5. Smoke test: drop one test case and watch the consumer pick it up.
+#    Delete the test case afterwards (duvo cases delete <case-id> -y).
+duvo cases create --queue <queue-id> --title "setup smoke test"
+duvo runs list --agent "$agent" --limit 1
+```
+
 ### Add and inspect cases
 
 ```bash
@@ -281,20 +329,50 @@ revision=$(
   | jq -r .build.id
 )
 
-# 2. Attach integrations to the revision.
+# 2. Attach integrations to the revision. This only creates the SLOTS —
+#    OAuth and user-provided integrations are not usable yet.
 duvo revision-integrations attach \
   --agent "$agent_id" --revision "$revision" \
   --integration slack --integration google_sheets
 
-# 3. Pin specific connections to integration slots.
+# 3. Pin one of the user's connections to every OAuth / user-provided
+#    slot. First find the slot IDs on the revision…
+duvo revision-integrations list \
+  --agent "$agent_id" --revision "$revision" --json
+
+#    …then find the user's connection for each integration type…
+duvo connections list --type slack --json
+
+#    …and pin it to the slot.
 duvo revision-integrations connections pin <connection-id> \
   --agent "$agent_id" --revision "$revision" --integration <slot-id>
 
-# 4. Promote the revision to live.
+# 4. Verify: every OAuth / user-provided slot reports ≥ 1 pinned
+#    connection. An empty list here means runs will fail at runtime.
+duvo revision-integrations connections list \
+  --agent "$agent_id" --revision "$revision" --integration <slot-id>
+
+# 5. Promote the revision to live.
 duvo revisions promote "$revision" \
   --agent "$agent_id" \
   --description "Roll out Slack notifications"
 ```
+
+⚠️ **The third trap — attached but unpinned.** Attaching an OAuth or
+user-provided integration (HubSpot, Gong, Slack, custom MCP, …) makes
+it _look_ configured: it shows up in `revision-integrations list` and
+as a chip in the web UI. But the run resolves tools through the
+**pinned connection**, and without one the slot silently resolves to
+nothing — the run fails with "not connected" and no setup-time command
+ever warned you. Always follow `attach` with `connections pin`, and
+verify with `connections list` per slot before telling the user the
+agent is ready. If `duvo connections list --type <slug>` shows the
+user has no connection of that type, pinning is impossible — they must
+connect the account first (`duvo oauth …` or the web UI's Connections
+page). Default integrations (browser, Exa, human-in-the-loop,
+`case-queue-producer`/`case-queue-consumer`) are the exception: they
+need no pin, but case-queue slots need a queue mapped instead (see
+workflow 4).
 
 Promotion is a switch to the live build — existing runs continue on
 the revision they started with.

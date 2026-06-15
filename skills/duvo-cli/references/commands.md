@@ -118,6 +118,19 @@ revision and the connections pinned to each slot.
 | `duvo revision-integrations queues set --agent <id> --revision <id> --integration <id> [--queue <id> …] [--json]`            | Replace the queues linked to a slot (omit `--queue` to unlink all). |
 | `duvo revision-integrations case-queue-setup --agent <id> --revision <id> [--json]`                                          | Check that every queue slot on a revision points at a queue.        |
 
+### Revision-integration gotchas
+
+- **`attach` creates the slot only.** OAuth and user-provided slots
+  (HubSpot, Gong, Slack, custom MCP, …) additionally need one of the
+  user's connections pinned (`connections pin`) or runs fail at
+  runtime with "not connected". Case-queue slots need a queue mapped
+  (`queues set`) instead of a pin.
+- **Verify, don't assume.** `case-queue-setup` checks queue slots
+  (`linked_queue_count` must be > 0); `connections list` checks a
+  pinned connection exists for an OAuth/user slot (expect ≥ 1 entry).
+  Neither `attach` nor `pin` failing to happen produces an error
+  anywhere until a run dies. See workflows 4 and 7 in `workflows.md`.
+
 ## Runs
 
 | Command                                                                                                                                                                                  | Purpose                                                                                                                                                      |

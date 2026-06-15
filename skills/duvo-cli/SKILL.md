@@ -224,6 +224,20 @@ the CLI rather than restating per-command:
   `duvo oauth native start <provider>` or `duvo oauth composio start …`,
   not by `duvo connections create` — the latter is only for
   user-provided MCP servers.
+- **Attached ≠ connected.** `revision-integrations attach` only creates
+  the integration **slot** on the revision. For OAuth and user-provided
+  integrations (HubSpot, Gong, Slack, custom MCP, …) the run can only
+  use the slot once one of the user's connections is **pinned** to it —
+  an attached slot with no pinned connection fails at runtime with "not
+  connected", and nothing warns you at attach time. Find the connection
+  with `duvo connections list --type <slug>`, pin it with
+  `duvo revision-integrations connections pin`, and verify with
+  `duvo revision-integrations connections list` (expect ≥ 1 entry per
+  slot). Default integrations (browser, Exa, human-in-the-loop,
+  `case-queue-producer`/`case-queue-consumer`, …) need no pin — but
+  case-queue slots need a **queue mapped** instead, verified with
+  `duvo revision-integrations case-queue-setup`. See workflow 7 and the
+  setup checklist in workflow 4 of `references/workflows.md`.
 - **Secrets vs connections vs credentials.** Three separate stores:
   `duvo secrets` holds env-var key/value pairs injected into runs at
   runtime; `duvo credentials` holds browser logins (domain + password
