@@ -11,7 +11,7 @@ description: >
 license: MIT
 metadata:
   author: duvoai
-  version: "1.0.2"
+  version: "1.0.3"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -61,7 +61,7 @@ If you only describe the symptom ("the Gmail call returned 401"), you have not d
 At minimum, one of:
 
 - A **Run ID** (called `run_id` in the API), or
-- An **Agent ID** plus enough description of the symptom to scope the recency window, or
+- An **Agent ID** — from which you resolve the relevant Run (usually the latest, or the latest failed one; see step 1), or
 - A **Case ID** if the failure is queue-driven.
 
 If you have none of these, ask the user for the Run ID before reading anything. Do not guess from context.
@@ -75,7 +75,7 @@ In API mode, these are the operations you call. The same names map to user terms
 - `getRevision` — the **Build that was active for this Run** (use the `build_id` from `getRun`, not the Agent's current Build). This contains the AOP the Agent was actually running against.
 - `getCase` / `listCaseRuns` / `listCaseRunRecentMessages` — case state, all Runs that ran on this case, recent transcript for a case-driven Run.
 - `listConnections` / `getConnection` — current Connection state. Useful to confirm whether a Connection that failed is still broken now.
-- `listRuns` — to spot a pattern across recent Runs of the same Agent.
+- `listRuns` — when you were given an Agent but no Run, resolve the Run to debug: fetch recent Runs newest-first (the default sort) with a small `limit` — usually just the latest, but pull the last few when that context helps (telling a one-off from a recurring failure, or comparing against the last Run that worked), and add `status=failed` to home in on the latest _failed_ Run. Also used to spot a pattern across recent Runs of the same Agent — a small recent window (bounded by `limit`, narrowed with `status` / `has_issues` when you can), not the whole history.
 - `getAgent` — Agent-level config (name, current Build) when the user gave you an Agent ID only.
 
 **Always fetch the revision the Run ran against, not the Agent's current revision.** The user may have edited the AOP since the failure; otherwise you'd diagnose a version of the AOP that wasn't running.
@@ -97,7 +97,7 @@ Stop short of asking for everything up front. Open with the AOP + the failing tr
 
 The five steps are the same in either mode; only the data source changes.
 
-1. **Anchor on the Run.** Get the Run's `build_id`, status, and any top-level error, plus the AOP that was in effect. _API mode:_ call `getRun`, then `getRevision` with that `build_id`. _Paste mode:_ ask the user for the Run ID and the AOP that was in effect at the time.
+1. **Anchor on the Run.** Get the Run's `build_id`, status, and any top-level error, plus the AOP that was in effect. _API mode:_ call `getRun`, then `getRevision` with that `build_id`. If you have only an Agent ID, first resolve the Run with `listRuns` (`agent_id`, newest-first by default, a small `limit` — the latest Run, or the last few when comparing helps; add `status=failed` when the user said it failed) — start narrow rather than pulling a wide run list to find one Run. _Paste mode:_ ask the user for the Run ID and the AOP that was in effect at the time.
 
 2. **Read the transcript.** Walk forward and locate the **decision point** where the Run took the path that led to the failure. The final error message is the end of the chain, not its origin. _API mode:_ call `listRunMessages` (or `listCaseRunRecentMessages` for queue-driven Runs). _Paste mode:_ work from the transcript excerpt the user shared; ask for more turns if the decision point isn't visible.
 
@@ -173,7 +173,7 @@ If the user asked for a pattern hunt across multiple Runs ("why does this Agent 
 ## Reading the request
 
 1. **Find the Run (or Agent, or Case) reference** in the conversation. If absent, ask before reading.
-2. **Determine intent.** Single-Run depth ("why did _this_ Run fail") vs. pattern sweep ("why does _this Agent_ keep failing"). The first wants depth on one Run; the second wants a sweep across recent Runs of the Agent.
+2. **Determine intent.** Single-Run depth ("why did _this_ Run fail", "my last Run failed", "this Run sent the wrong email") vs. pattern sweep ("why does _this Agent_ keep failing"). Single-Run intent — including "my last Run" with no ID — wants depth on the most recent Run: fetch it with `listRuns` newest-first and a small `limit` (usually just the latest; pull the last few when it helps place the failure; add `status=failed` if they said it failed), then dig in. The pattern sweep wants a _bounded_ recent window across the Agent's Runs — a small recent slice, not the whole history; a true Agent-wide audit is `workflow-debugger`.
 3. **Determine queue vs. standalone shape.** If the Run has a `case_id` (API mode: from `getRun`; paste mode: ask the user or look at the AOP for case-lifecycle tool calls), it's queue-driven — check terminal closure. Otherwise focus on the final tool call and its result.
 
 You have no access to anything outside what's in your tool list (API mode) or what the user has shared (paste mode). Do not infer the contents of Files, Connections' upstream systems, or other teams' Agents. The transcript and the revision are the source of truth.
