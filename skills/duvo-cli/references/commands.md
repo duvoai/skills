@@ -330,20 +330,21 @@ Supported artifact import content types are `image/svg+xml`,
 
 ## Skills & plugins
 
-| Command                                                                                                                    | Purpose                                                              |
-| -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `duvo skills list [--system] [--json]`                                                                                     | List skills available to your team (or system skills only).          |
-| `duvo skills system [--json]`                                                                                              | List global system skills available to all teams.                    |
-| `duvo skills create --name <n> --description <d> [--content <text>\|--content-file <path>] [--license <license>] [--json]` | Create a skill from Markdown content.                                |
-| `duvo skills upload <file> [--json]`                                                                                       | Create or update a skill by uploading a `SKILL.md` or a ZIP archive. |
-| `duvo skills delete <skill-id> [-y] [--json]`                                                                              | Delete a custom skill.                                               |
-| `duvo skills files <skill-id> [--json]`                                                                                    | List files inside a skill.                                           |
-| `duvo skills file-get <skill-id> <path> [--json]`                                                                          | Print the content of a file inside a skill.                          |
-| `duvo skills file-update <skill-id> <path> [--content <text>\|--content-file <path>] [--json]`                             | Update the content of a file inside a skill.                         |
-| `duvo skills download <skill-id> [--output <path>]`                                                                        | Download a custom skill as a ZIP.                                    |
-| `duvo skills assignments <skill-id> [--json]`                                                                              | List agents whose live build references a skill.                     |
-| `duvo skills generate --prompt <text> [--name <n>] [--json]`                                                               | Generate a `SKILL.md` from a prompt.                                 |
-| `duvo plugins list [--json]`                                                                                               | List plugins referenceable by name in a revision.                    |
+| Command                                                                                                                    | Purpose                                                                       |
+| -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `duvo skills list [--system] [--json]`                                                                                     | List skills available to your team (or system skills only).                   |
+| `duvo skills system [--json]`                                                                                              | List global system skills available to all teams.                             |
+| `duvo skills install <skill-id> [--json]`                                                                                  | Copy a system skill (or any accessible skill) into your team's skill library. |
+| `duvo skills create --name <n> --description <d> [--content <text>\|--content-file <path>] [--license <license>] [--json]` | Create a skill from Markdown content.                                         |
+| `duvo skills upload <file> [--json]`                                                                                       | Create or update a skill by uploading a `SKILL.md` or a ZIP archive.          |
+| `duvo skills delete <skill-id> [-y] [--json]`                                                                              | Delete a custom skill.                                                        |
+| `duvo skills files <skill-id> [--json]`                                                                                    | List files inside a skill.                                                    |
+| `duvo skills file-get <skill-id> <path> [--json]`                                                                          | Print the content of a file inside a skill.                                   |
+| `duvo skills file-update <skill-id> <path> [--content <text>\|--content-file <path>] [--json]`                             | Update the content of a file inside a skill.                                  |
+| `duvo skills download <skill-id> [--output <path>]`                                                                        | Download a custom skill as a ZIP.                                             |
+| `duvo skills assignments <skill-id> [--json]`                                                                              | List agents whose live build references a skill.                              |
+| `duvo skills generate --prompt <text> [--name <n>] [--json]`                                                               | Generate a `SKILL.md` from a prompt.                                          |
+| `duvo plugins list [--json]`                                                                                               | List plugins referenceable by name in a revision.                             |
 
 ## Team
 
@@ -403,6 +404,32 @@ spawned from it get the injected values at runtime.
 | `duvo revision-logins list --agent <id> --revision <id> [--json]`                        | List browser logins attached to a revision.                                     |
 | `duvo revision-logins attach --agent <id> --revision <id> --credential <id> [--json]`    | Attach a browser login to a revision so the browsing agent can use it.          |
 | `duvo revision-logins detach <credential-id> --agent <id> --revision <id> [-y] [--json]` | Detach a browser login from a revision. Destructive — prompts for confirmation. |
+
+## Suggestions
+
+`duvo suggestions …` manages connection suggestions on an Agent. The platform
+automatically surfaces suggestions when it detects a tool call that failed
+because a Connection was missing or not yet linked. Consuming a suggestion
+stages the change into the Agent's draft revision; rejecting it dismisses it.
+
+| Command                                                                                                | Purpose                                                                                                                                           |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `duvo suggestions list <agent-id> [--status <pending\|history>] [--limit <n>] [--offset <n>] [--json]` | List suggestions for an Agent. `--status pending` (default) is the active inbox; `--status history` shows consumed/dismissed/auto-cleared items.  |
+| `duvo suggestions consume <suggestion-id> [--revision-id <id>] [--json]`                               | Apply a suggestion: stage its change into the Agent's draft revision. Pass `--revision-id` to target a specific draft rather than the newest one. |
+| `duvo suggestions reject <suggestion-id> [-y] [--json]`                                                | Dismiss a pending suggestion. Destructive — prompts for confirmation.                                                                             |
+
+## Bundled guides
+
+`duvo guide …` reads version-matched CLI guides shipped alongside the installed
+binary. Guides are Markdown files with frontmatter; they do not make API calls.
+The main guide (`duvo`) is the recommended starting point for AI agents
+unfamiliar with the CLI.
+
+| Command                          | Purpose                                                                                              |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `duvo guide list [--json]`       | List the bundled guides shipped with this CLI version (also runs as `duvo guide`).                   |
+| `duvo guide get <name> [--json]` | Print a guide by name. `--json` returns `{ name, description, body }`.                               |
+| `duvo guide path [name]`         | Print the on-disk path to the bundled guides directory, or to one specific guide if `name` is given. |
 
 ## Low-level
 

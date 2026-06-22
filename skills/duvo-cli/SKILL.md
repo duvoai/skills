@@ -10,7 +10,7 @@ description: >
 license: MIT
 metadata:
   author: duvoai
-  version: "1.1.0"
+  version: "1.2.0"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -146,6 +146,7 @@ The top-level groups are:
 
 - **Auth & profiles** — `login`, `logout`, `whoami`, `profiles …`
 - **Agents** — `agents …`, `agents delete`, `agents models`, `agents set-model`, `agents case-triggers …`, `agents schedules …`, `agents triggers …`, `agents memory …`
+- **Suggestions** — `suggestions …` (Connection suggestions: list, consume, reject)
 - **Agent folders** — `agent-folders …` (organize agents in a tree)
 - **Revisions** — `revisions …`, `revision-integrations …` (versioned configs)
 - **Runs** — `runs …` (start, get, message, stop, respond to HITL, evaluation)
@@ -156,6 +157,7 @@ The top-level groups are:
 - **Clarity** — `clarity …` (process search, versions, captures, gaps, evidence, facets, export, generation, promotion, artifact imports, invite links, doctor)
 - **Skills & plugins** — `skills …`, `plugins …`
 - **Team** — `team current`, `team get`, `team members`, `team use`, `teams list`
+- **Bundled guides** — `guide …` (version-matched CLI guides for AI agents)
 - **Low-level** — `api <method> <path>`
 
 For end-to-end recipes (create an agent → start a run → respond to
@@ -179,7 +181,8 @@ the CLI rather than restating per-command:
   `duvo cases delete`, `duvo cases clear`, `duvo cases bulk-delete`,
   `duvo skills delete`, `duvo queues delete`, `duvo secrets delete`,
   `duvo credentials delete`, `duvo revision-secrets detach`,
-  `duvo revision-logins detach`, `duvo agents schedules delete`, …)
+  `duvo revision-logins detach`, `duvo agents schedules delete`,
+  `duvo suggestions reject`, …)
   prompt for confirmation in a TTY and refuse on a non-TTY stdin. Pass
   `-y` / `--yes` to skip the prompt — never pipe `yes` into the CLI to
   bypass the prompt; it explicitly refuses inferred consent from piped
