@@ -283,27 +283,29 @@ processes support only `overview`, `status`, `captures`, `capture`, and
 
 ### Read and inspect
 
-| Command                                                                                    | Purpose                                                                                        |
-| ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
-| `duvo clarity list [--limit <n>] [--offset <n>] [--search <text>] [--status <s>] [--json]` | List Clarity processes for the current team.                                                   |
-| `duvo clarity search <query> [--limit <n>] [--offset <n>] [--status <s>] [--json]`         | Search Clarity processes by name.                                                              |
-| `duvo clarity status <process-id> [--json]`                                                | Show process status, generation progress, selected version IDs, and health warnings.           |
-| `duvo clarity overview <process-id> [--current <selector>] [--proposal <selector>]`        | Show a summary-first process overview. Add `--json`, `--markdown`, or `--include-transcripts`. |
-| `duvo clarity versions <process-id> [--json]`                                              | List v2 current-process and transformation-proposal version histories.                         |
-| `duvo clarity current <process-id> [--snapshot <selector>] [--json]`                       | Read a v2 current-process snapshot.                                                            |
-| `duvo clarity proposal <process-id> [--snapshot <selector>] [--json]`                      | Read a v2 transformation-proposal snapshot.                                                    |
-| `duvo clarity compare <process-id> [--current <selector>] [--proposal <selector>]`         | Compare selected current-process and transformation-proposal snapshots.                        |
-| `duvo clarity captures <process-id> [--include-transcripts] [--json] [--csv]`              | List captures attached to a process.                                                           |
-| `duvo clarity capture <process-id> <capture-id> [--include-transcripts] [--json]`          | Read one capture attached to a process.                                                        |
-| `duvo clarity gaps <process-id> [--json]`                                                  | Group v2 proposal gaps and extra-capture requests by step.                                     |
-| `duvo clarity evidence <process-id> [--citation <id>] [--json]`                            | Print current-process evidence sources, or resolve one citation ID.                            |
-| `duvo clarity readiness <process-id> [--json]`                                             | Summarize v2 automation-readiness ratings.                                                     |
-| `duvo clarity facets <process-id> [--json]`                                                | Build structured cost, risk, lineage, and automation facets for agents and scripts.            |
-| `duvo clarity export <process-id> [--json] [--csv] [--include-transcripts]`                | Export Clarity context as Markdown, JSON, or CSV.                                              |
-| `duvo clarity doctor [process-id] [--json]`                                                | Check auth, API reachability, command availability, and optional process-level context health. |
-| `duvo clarity tools [--json]`                                                              | List the Clarity CLI tool map with commands and underlying public API endpoints.               |
-| `duvo clarity artifact-chat-conversations <process-id> --snapshot-kind <kind> [--json]`    | List artifact-chat conversations for a current-process or transformation-proposal view.        |
-| `duvo clarity artifact-chat-messages <process-id> <conversation-id> [--json]`              | Read messages for one artifact-chat conversation.                                              |
+| Command                                                                                                                         | Purpose                                                                                                                                                                 |
+| ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `duvo clarity list [--limit <n>] [--offset <n>] [--search <text>] [--status <s>] [--process-version <1\|2>] [--json] [--csv]`   | List Clarity processes for the current team. `--process-version` filters by schema version.                                                                             |
+| `duvo clarity search <query> [--limit <n>] [--offset <n>] [--status <s>] [--process-version <1\|2>] [--json] [--csv]`           | Search Clarity processes by name. `--process-version` filters by schema version.                                                                                        |
+| `duvo clarity status <process-id> [--json]`                                                                                     | Show process status, generation progress, selected version IDs, and health warnings.                                                                                    |
+| `duvo clarity overview <process-id> [--current <selector>] [--proposal <selector>]`                                             | Show a summary-first process overview. Add `--json`, `--markdown`, or `--include-transcripts`.                                                                          |
+| `duvo clarity versions <process-id> [--json]`                                                                                   | List v2 current-process and transformation-proposal version histories.                                                                                                  |
+| `duvo clarity current <process-id> [--snapshot <selector>] [--json]`                                                            | Read a v2 current-process snapshot.                                                                                                                                     |
+| `duvo clarity proposal <process-id> [--snapshot <selector>] [--json]`                                                           | Read a v2 transformation-proposal snapshot.                                                                                                                             |
+| `duvo clarity compare <process-id> [--current <selector>] [--proposal <selector>]`                                              | Compare selected current-process and transformation-proposal snapshots.                                                                                                 |
+| `duvo clarity captures <process-id> [--include-transcripts] [--json] [--csv]`                                                   | List captures attached to a process.                                                                                                                                    |
+| `duvo clarity capture <process-id> <capture-id> [--include-transcripts] [--json]`                                               | Read one capture attached to a process.                                                                                                                                 |
+| `duvo clarity gaps <process-id> [--json]`                                                                                       | Group v2 proposal gaps and extra-capture requests by step.                                                                                                              |
+| `duvo clarity evidence <process-id> [--citation <id>] [--json]`                                                                 | Print current-process evidence sources, or resolve one citation ID.                                                                                                     |
+| `duvo clarity readiness <process-id> [--json]`                                                                                  | Summarize v2 automation-readiness ratings.                                                                                                                              |
+| `duvo clarity facets <process-id> [--json]`                                                                                     | Build structured cost, risk, lineage, and automation facets for agents and scripts.                                                                                     |
+| `duvo clarity export <process-id> [--json] [--include-transcripts]`                                                             | Export Clarity context as Markdown or JSON.                                                                                                                             |
+| `duvo clarity doctor [process-id] [--json]`                                                                                     | Check auth, API reachability, command availability, and optional process-level context health.                                                                          |
+| `duvo clarity tools [--json]`                                                                                                   | List the Clarity CLI tool map with commands and underlying public API endpoints.                                                                                        |
+| `duvo clarity process-summaries [--limit <n>] [--offset <n>] [--detail <skeleton\|summary>] [--include-current-steps] [--json]` | List lightweight summaries for all Clarity processes accessible to the current user. `--detail skeleton` (default) omits step bodies; `--detail summary` includes them. |
+| `duvo clarity list-extra-capture-requests <process-id> <proposal-id> [--limit <n>] [--offset <n>] [--json]`                     | List extra-capture requests attached to a transformation-proposal snapshot.                                                                                             |
+| `duvo clarity artifact-chat-conversations <process-id> --snapshot-kind <kind> [--json]`                                         | List artifact-chat conversations for a current-process or transformation-proposal view.                                                                                 |
+| `duvo clarity artifact-chat-messages <process-id> <conversation-id> [--json]`                                                   | Read messages for one artifact-chat conversation.                                                                                                                       |
 
 Snapshot selectors are `live`, `latest`, or an exact snapshot ID from
 `duvo clarity versions`.
@@ -321,12 +323,74 @@ Snapshot selectors are `live`, `latest`, or an exact snapshot ID from
 | `duvo clarity assign-extra-capture-request <process-id> <proposal-id> <request-id> [--user-id <id>] [--json]`              | Assign an extra-capture request to a team member with `--user-id`; omit it to unassign the request.                                                       |
 | `duvo clarity postprocess <process-id> <snapshot-type> <snapshot-id> [--json]`                                             | Re-run postprocessing for `current_process` or `transformation_proposal`.                                                                                 |
 | `duvo clarity build-automation <process-id> [--json]`                                                                      | Start automation generation from the latest transformation proposal.                                                                                      |
+| `duvo clarity stop-current-process <process-id> [--json]`                                                                  | Stop an in-flight current-process generation job.                                                                                                         |
 | `duvo clarity stop-transformation-proposal <process-id> [--json]`                                                          | Stop an in-flight transformation-proposal generation job.                                                                                                 |
 | `duvo clarity create-invite-link <process-id> [--json]`                                                                    | Create or regenerate a Clarity interview invite link that can be sent to someone.                                                                         |
 | `duvo clarity import-artifact <process-id> <file> [--content-type <mime>] [--extra-capture-request-id <id>] [--json]`      | Import a local Miro SVG, XML, PNG, or JPEG export by creating a signed upload URL, uploading bytes, and completing the import.                            |
 
 Supported artifact import content types are `image/svg+xml`,
 `application/xml`, `text/xml`, `image/png`, and `image/jpeg`.
+
+### Clarity process landscape
+
+`duvo clarity landscape …` reads and curates the org-level Clarity process
+landscape (hierarchical tree of area nodes and process nodes). Every
+subcommand requires `--org <org-id>` or the `DUVO_ORG_ID` environment
+variable, and an OAuth profile with an org-level role (API-key profiles have
+no org visibility).
+
+**Read commands:**
+
+| Command                                                                                           | Purpose                                                             |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `duvo clarity landscape get [--org <org-id>] [--root <node-id>] [--json]`                         | Read the full process landscape (or a subtree). Default subcommand. |
+| `duvo clarity landscape tree [--org <org-id>] [--root <node-id>] [--json]`                        | Read the raw process tree (depth-first flat list with depth field). |
+| `duvo clarity landscape search <query> [--org <org-id>] [--root <node-id>] [--json]`              | Filter landscape nodes by name, owner, process name, or id.         |
+| `duvo clarity landscape node <node-id> [--org <org-id>] [--json]`                                 | Read one landscape node by ID.                                      |
+| `duvo clarity landscape captures [--org <org-id>] [--limit <n>] [--include-transcripts] [--json]` | List Clarity captures eligible for the process landscape.           |
+
+**Write commands:**
+
+| Command                                                                                                                                      | Purpose                                                                 |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `duvo clarity landscape create-area --name <name> [--org <org-id>] [--parent <node-id>] [--owner-label <label>] [--team <team-id>] [--json]` | Create an area node in the process landscape.                           |
+| `duvo clarity landscape rename-node <node-id> [--org <org-id>] [--name <name>] [--owner-label <label>] [--clear-owner-label] [--json]`       | Rename a landscape node or update its owner label.                      |
+| `duvo clarity landscape move-node <node-id> [--org <org-id>] [--parent <node-id>\|--root] [--json]`                                          | Move a node under a new parent or to the root.                          |
+| `duvo clarity landscape confirm-node <node-id> --axis <content\|existence> [--org <org-id>] [--json]`                                        | Confirm a landscape node on the `content` or `existence` axis.          |
+| `duvo clarity landscape delete-node <node-id> [--org <org-id>] [--json]`                                                                     | Delete a landscape node and its entire subtree.                         |
+| `duvo clarity landscape generate [--org <org-id>] [--json]`                                                                                  | Start async generation of the process landscape from eligible captures. |
+| `duvo clarity landscape propose-process --name <name> [--org <org-id>] [--description <text>] [--parent <node-id>] [--json]`                 | Propose a new process node in the landscape.                            |
+
+### Clarity process links
+
+`duvo clarity process-links …` manages directed links between landscape
+process nodes. Every subcommand requires `--org <org-id>` or `DUVO_ORG_ID`.
+Link types: `hands_off_to`, `shares_step_with`, `variant_of`. Link states:
+`suggested`, `confirmed`.
+
+| Command                                                                                                                                                                                       | Purpose                                                                                        |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `duvo clarity process-links list [--org <org-id>] [--node <node-id>] [--limit <n>] [--offset <n>] [--json]`                                                                                   | List process links in the organization. `--node` filters to links touching a specific node.    |
+| `duvo clarity process-links create --source-node <id> --target-node <id> --type <type> [--org <org-id>] [--state <state>] [--confidence <0-1>] [--json]`                                      | Create a process link. Returns the existing link if one already exists for the same node pair. |
+| `duvo clarity process-links update <link-id> [--org <org-id>] [--source-node <id>] [--target-node <id>] [--type <type>] [--state <state>] [--confidence <0-1>] [--clear-confidence] [--json]` | Update fields on an existing process link. Only supplied fields change.                        |
+| `duvo clarity process-links delete <link-id> [--org <org-id>] [--json]`                                                                                                                       | Delete a process link.                                                                         |
+
+## Pulse
+
+`duvo pulse …` manages Pulse dashboards — AI-generated reports that synthesize
+your team's data into a live HTML document. Each dashboard has an owner
+(creator) and a version history; sending a message triggers a new generation.
+
+| Command                                                            | Purpose                                                                                                                    |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `duvo pulse list [--shared] [--limit <n>] [--offset <n>] [--json]` | List your Pulse dashboards. `--shared` lists dashboards shared with you by teammates instead.                              |
+| `duvo pulse create --message <text> [--json]`                      | Create a new Pulse dashboard from a prompt. Returns metadata including the new dashboard ID.                               |
+| `duvo pulse get <id> [--json]`                                     | Get a Pulse dashboard's metadata and generation status.                                                                    |
+| `duvo pulse html <id> [--version <version-id>]`                    | Print the rendered HTML document to stdout. Pipe to a file or open in a browser. `--version` pins to a historical version. |
+| `duvo pulse send-message <id> --message <text> [--json]`           | Send a follow-up instruction to a Pulse dashboard, triggering a new generation.                                            |
+| `duvo pulse versions <id> [--json]`                                | List the version history for a Pulse dashboard.                                                                            |
+| `duvo pulse restore <id> <version-id> [--json]`                    | Restore a Pulse dashboard to a previous version. The restored version becomes the new live version.                        |
+| `duvo pulse delete <id> [-y] [--json]`                             | Delete a Pulse dashboard (creator only). Destructive — prompts for confirmation.                                           |
 
 ## Skills & plugins
 
@@ -355,6 +419,7 @@ Supported artifact import content types are `image/svg+xml`,
 | `duvo team members [--team <id>] [--limit <n>] [--offset <n>] [--json]` | List members of a team.                                                                                                                                                                                          |
 | `duvo team use <team-id>`                                               | Set the default team for the active OAuth profile. Subsequent commands resolve to this team unless overridden by `--team` or `DUVO_TEAM_ID`. API-key profiles reject this (the key is already scoped to a team). |
 | `duvo teams list [--json]`                                              | List every team your credentials can act on. For API-key callers this returns one team; for OAuth callers it returns all teams you're a member of. Useful before `duvo team use`.                                |
+| `duvo teams org <org-id> [--json]`                                      | List every team inside an organization. Requires an OAuth profile with an org-level role; API-key profiles are rejected (the key is team-scoped and has no org visibility).                                      |
 
 ## Secrets (env-var secrets)
 

@@ -4,13 +4,13 @@ description: >
   Drive the Duvo public API from the terminal via the `duvo` CLI
   (`@duvoai/cli`). Use when the user wants to script Duvo — managing
   agents, runs, cases, queues, files, skills, connections, Clarity
-  processes, or hitting an arbitrary endpoint via `duvo api` — instead of
-  clicking through the
-  Duvo web UI or hand-crafting `curl` calls.
+  processes, Pulse dashboards, or hitting an arbitrary endpoint via
+  `duvo api` — instead of clicking through the Duvo web UI or
+  hand-crafting `curl` calls.
 license: MIT
 metadata:
   author: duvoai
-  version: "1.2.0"
+  version: "1.3.0"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -154,9 +154,10 @@ The top-level groups are:
 - **Files & sandboxes** — `files …`, `sandboxes …`
 - **Connections & integrations** — `integrations …`, `connections …`, `oauth …`
 - **Secrets & credentials** — `secrets …` (env-var secrets), `credentials …` (browser logins), `revision-secrets …`, `revision-logins …`
-- **Clarity** — `clarity …` (process search, versions, captures, gaps, evidence, facets, export, generation, promotion, artifact imports, invite links, doctor)
+- **Clarity** — `clarity …` (process search, versions, captures, gaps, evidence, facets, export, generation, promotion, artifact imports, invite links, doctor, process landscape, process links, process summaries)
+- **Pulse** — `pulse …` (create, get, list, send message, version history, restore, delete Pulse dashboards)
 - **Skills & plugins** — `skills …`, `plugins …`
-- **Team** — `team current`, `team get`, `team members`, `team use`, `teams list`
+- **Team** — `team current`, `team get`, `team members`, `team use`, `teams list`, `teams org`
 - **Bundled guides** — `guide …` (version-matched CLI guides for AI agents)
 - **Low-level** — `api <method> <path>`
 
@@ -182,7 +183,7 @@ the CLI rather than restating per-command:
   `duvo skills delete`, `duvo queues delete`, `duvo secrets delete`,
   `duvo credentials delete`, `duvo revision-secrets detach`,
   `duvo revision-logins detach`, `duvo agents schedules delete`,
-  `duvo suggestions reject`, …)
+  `duvo suggestions reject`, `duvo pulse delete`, …)
   prompt for confirmation in a TTY and refuse on a non-TTY stdin. Pass
   `-y` / `--yes` to skip the prompt — never pipe `yes` into the CLI to
   bypass the prompt; it explicitly refuses inferred consent from piped
