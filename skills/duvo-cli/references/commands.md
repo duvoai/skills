@@ -42,6 +42,7 @@ pass `-y` explicitly.
 | `duvo agents models [--json]`                                                                                                                                                                                  | List the LLM models available for agents. The MODEL value is what `--model` accepts.                                                     |
 | `duvo agents set-model <id> [--model <model>] [--json]`                                                                                                                                                        | Switch the Claude model used by an agent's latest revision. Interactive picker when `--model` is omitted in a TTY.                       |
 | `duvo agents delete <id> [-y] [--json]`                                                                                                                                                                        | Delete an agent. Active runs are interrupted. Destructive — prompts for confirmation.                                                    |
+| `duvo agents move <id> --to-team <id> [--all-together] [--skip-learnings] [--dry-run] [-y] [--json]`                                                                                                           | Move an agent (and its connected workspace) to another team. `--all-together` carries connected queues/agents; `--dry-run` previews.     |
 
 ### Schedules (per agent)
 
