@@ -10,7 +10,7 @@ description: >
 license: MIT
 metadata:
   author: duvoai
-  version: "1.3.0"
+  version: "1.4.0"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -145,7 +145,7 @@ See `references/commands.md` for the full command tree with flags.
 The top-level groups are:
 
 - **Auth & profiles** — `login`, `logout`, `whoami`, `profiles …`
-- **Agents** — `agents …`, `agents delete`, `agents models`, `agents set-model`, `agents case-triggers …`, `agents schedules …`, `agents triggers …`, `agents memory …`
+- **Agents** — `agents …`, `agents delete`, `agents models`, `agents set-model`, `agents case-triggers …`, `agents schedules …`, `agents triggers …`, `agents memory …`, `agents eval-scores`, `agents eval-rubrics …`
 - **Suggestions** — `suggestions …` (Connection suggestions: list, consume, reject)
 - **Agent folders** — `agent-folders …` (organize agents in a tree)
 - **Revisions** — `revisions …`, `revision-integrations …` (versioned configs)
@@ -154,10 +154,10 @@ The top-level groups are:
 - **Files & sandboxes** — `files …`, `sandboxes …`
 - **Connections & integrations** — `integrations …`, `connections …`, `oauth …`
 - **Secrets & credentials** — `secrets …` (env-var secrets), `credentials …` (browser logins), `revision-secrets …`, `revision-logins …`
-- **Clarity** — `clarity …` (process search, versions, captures, gaps, evidence, facets, export, generation, promotion, artifact imports, invite links, doctor, process landscape, process links, process summaries)
-- **Pulse** — `pulse …` (create, get, list, send message, version history, restore, delete Pulse dashboards)
+- **Clarity** — `clarity …` (process search, versions, captures, gaps, evidence, facets, export, generation, promotion, artifact imports, invite links, doctor, process landscape, process links, process tags, process summaries)
+- **Pulse** — `pulse …` (create, get, list, send message, refresh, stop, rename, share, duplicate, pdf/snapshot export, version history, restore, messages, answer HITL, connections, delete Pulse dashboards)
 - **Skills & plugins** — `skills …`, `plugins …`
-- **Team** — `team current`, `team get`, `team members`, `team use`, `teams list`, `teams org`
+- **Team** — `team current`, `team get`, `team members`, `team use`, `teams list`, `teams org`, `teams org-insights`, `teams org-metrics`, `teams org-usage`
 - **Bundled guides** — `guide …` (version-matched CLI guides for AI agents)
 - **Low-level** — `api <method> <path>`
 
@@ -183,6 +183,9 @@ the CLI rather than restating per-command:
   `duvo skills delete`, `duvo queues delete`, `duvo secrets delete`,
   `duvo credentials delete`, `duvo revision-secrets detach`,
   `duvo revision-logins detach`, `duvo agents schedules delete`,
+  `duvo agents eval-rubrics remove`, `duvo agents eval-rubrics replace`,
+  `duvo connections delete`, `duvo queue-labels delete`,
+  `duvo integrations custom delete`, `duvo clarity process-labels delete`,
   `duvo suggestions reject`, `duvo pulse delete`, …)
   prompt for confirmation in a TTY and refuse on a non-TTY stdin. Pass
   `-y` / `--yes` to skip the prompt — never pipe `yes` into the CLI to
@@ -254,6 +257,11 @@ the CLI rather than restating per-command:
   teams. Use `duvo teams list` to see all teams, then `duvo team use <id>`
   to set the default, or `--team <id>` per-command. API-key
   profiles are always single-team and reject `--team`.
+- **Reconnecting an expired OAuth connection.** Don't create a new
+  connection for a stale one — pass `--reconnect-instance-id <id>` to
+  `duvo oauth native start` or `duvo oauth mcp authorize` with the
+  existing connection's ID (from `duvo connections list`) to
+  re-authorize it in place instead of creating a duplicate.
 - **Clarity has both read and explicit write commands.** Start with
   `duvo clarity overview <process-id>`, then use `versions`, `current`,
   `proposal`, `compare`, `gaps`, `evidence`, `readiness`, or `facets` to
