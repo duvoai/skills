@@ -400,7 +400,6 @@ no org visibility).
 | `duvo clarity landscape create-area --name <name> [--org <org-id>] [--parent <node-id>] [--owner-label <label>] [--team <team-id>] [--json]` | Create an area node in the process landscape.                           |
 | `duvo clarity landscape rename-node <node-id> [--org <org-id>] [--name <name>] [--owner-label <label>] [--clear-owner-label] [--json]`       | Rename a landscape node or update its owner label.                      |
 | `duvo clarity landscape move-node <node-id> [--org <org-id>] [--parent <node-id>\|--root] [--json]`                                          | Move a node under a new parent or to the root.                          |
-| `duvo clarity landscape confirm-node <node-id> --axis <content\|existence> [--org <org-id>] [--json]`                                        | Confirm a landscape node on the `content` or `existence` axis.          |
 | `duvo clarity landscape delete-node <node-id> [--org <org-id>] [--json]`                                                                     | Delete a landscape node and its entire subtree.                         |
 | `duvo clarity landscape generate [--org <org-id>] [--json]`                                                                                  | Start async generation of the process landscape from eligible captures. |
 | `duvo clarity landscape propose-process --name <name> [--org <org-id>] [--description <text>] [--parent <node-id>] [--json]`                 | Propose a new process node in the landscape.                            |
