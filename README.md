@@ -23,9 +23,10 @@ If you build and run your Duvo Agents from the Claude desktop app or claude.ai, 
 
 In Claude Code the equivalent is:
 
-```
+```text
 /plugin marketplace add duvoai/skills
 /plugin install duvo@duvo
+/reload-plugins
 ```
 
 Notes:
@@ -93,7 +94,7 @@ Each skill is self-contained — install the whole set or just the one you need.
 | Skill | In plugin | Description |
 | --- | :---: | --- |
 | **duvo-cli** | — | Drive the Duvo platform from the terminal via the `duvo` CLI (`@duvoai/cli`) — manage agents, runs, cases, queues, files, skills, connections, and Clarity processes, or hit any endpoint with `duvo api`. |
-| **aop-writer** | ✓ | Draft, rewrite, or critique a Duvo Agent AOP, returning a single markdown document in the canonical GOAL / STEPS / NOTES shape. |
+| **aop-writer** | ✓ | Draft, rewrite, or critique a Duvo Agent AOP, returning a single Markdown document in the canonical GOAL / STEPS / NOTES shape. |
 | **run-debugger** | ✓ | Investigate why a Duvo Run failed or produced the wrong outcome — reads the Run transcript and active Build, names the root cause from a fixed failure-mode taxonomy, and proposes one concrete fix. |
 | **workflow-debugger** | ✓ | Audit a Duvo Agent — or a multi-Agent workflow connected by a Queue — across many Runs to find systemic inefficiencies and quality issues, then recommend concrete AOP and architecture changes. |
 | **connection-doctor** | ✓ | Diagnose and health-check the Connections and credentials a Duvo Agent relies on — reads each Build's Connections and their live state, names the problem, and proposes one concrete fix. |
