@@ -33,7 +33,7 @@ Notes:
 
 - Plugin-installed skills are namespaced, e.g. `duvo:run-debugger`, `duvo:aop-writer`.
 - The plugin ships every skill **except `duvo-cli`** — that one drives the terminal CLI, which doesn't apply inside the Claude app. Use the npx path below if you want it.
-- Already added the Duvo connector manually? The plugin brings its own plugin-scoped copy of the same tools — remove your manually-added connector (or keep both; they're the same server).
+- Already added the Duvo connector manually? The plugin brings its own plugin-scoped copy of the same tools — remove the manually-added connector after installing, so you don't end up with two copies of every Duvo tool.
 - **Updates:** when a new plugin version is released, the plugin manager shows an **Update** button — one click and you're current.
 
 ## Quickstart (coding agents)
