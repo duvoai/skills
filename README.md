@@ -5,7 +5,7 @@
 
 Official [agent skills](https://skills.sh) for [Duvo](https://duvo.ai) — the AI platform that maps your real operations, designs the better version, and runs them across your existing systems.
 
-These skills teach Claude and other agents to operate Duvo directly: manage Agents, debug failed Runs, and write the AOPs that drive them.
+These skills teach Claude and other coding agents to operate Duvo directly: manage Agents, debug failed Runs, and write the AOPs that drive them. How you install depends on which agent you use — see below.
 
 There are two ways to install, depending on where you work:
 
