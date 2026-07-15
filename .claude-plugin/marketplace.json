@@ -1,0 +1,31 @@
+{
+  "name": "duvo",
+  "owner": {
+    "name": "Duvo",
+    "url": "https://duvo.ai"
+  },
+  "description": "Official Duvo skills and connector for Claude",
+  "plugins": [
+    {
+      "name": "duvo",
+      "source": "./",
+      "displayName": "Duvo",
+      "description": "Operate Duvo from Claude: debug failed Runs, audit Agents and Queues, doctor Connections, and write AOPs — with the Duvo MCP connector wired in.",
+      "category": "productivity",
+      "skills": [
+        "./skills/aop-writer",
+        "./skills/run-debugger",
+        "./skills/workflow-debugger",
+        "./skills/connection-doctor",
+        "./skills/improve-agent",
+        "./skills/improve-queue"
+      ],
+      "mcpServers": {
+        "duvo": {
+          "type": "http",
+          "url": "https://api.duvo.ai/v2/mcp"
+        }
+      }
+    }
+  ]
+}

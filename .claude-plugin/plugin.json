@@ -1,0 +1,19 @@
+{
+  "name": "duvo",
+  "displayName": "Duvo",
+  "version": "1.0.0",
+  "description": "Operate Duvo from Claude: debug failed Runs, audit Agents and Queues, doctor Connections, and write AOPs — with the Duvo MCP connector wired in.",
+  "author": {
+    "name": "Duvo",
+    "url": "https://duvo.ai"
+  },
+  "homepage": "https://docs.duvo.ai",
+  "repository": "https://github.com/duvoai/skills",
+  "license": "MIT",
+  "mcpServers": {
+    "duvo": {
+      "type": "http",
+      "url": "https://api.duvo.ai/v2/mcp"
+    }
+  }
+}
