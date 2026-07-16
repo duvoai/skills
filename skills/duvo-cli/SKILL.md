@@ -228,9 +228,8 @@ the CLI rather than restating per-command:
   team's catalog of integration types; `duvo connections list` shows
   the user's actual connected accounts (one per OAuth/credential
   flow). OAuth-based connections (Gmail, Slack, …) are started by
-  `duvo oauth native start <provider>` or `duvo oauth composio start …`,
-  not by `duvo connections create` — the latter is only for
-  user-provided MCP servers.
+  `duvo oauth native start <provider>`, not by `duvo connections create`
+  — the latter is only for user-provided MCP servers.
 - **Attached ≠ connected.** `revision-integrations attach` only creates
   the integration **slot** on the revision. For OAuth and user-provided
   integrations (HubSpot, Gong, Slack, custom MCP, …) the run can only
