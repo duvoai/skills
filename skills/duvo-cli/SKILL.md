@@ -10,7 +10,7 @@ description: >
 license: MIT
 metadata:
   author: duvoai
-  version: "1.4.0"
+  version: "1.5.0"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -155,10 +155,11 @@ The top-level groups are:
 - **Connections & integrations** — `integrations …`, `connections …`, `oauth …`
 - **Secrets & credentials** — `secrets …` (env-var secrets), `credentials …` (browser logins), `revision-secrets …`, `revision-logins …`
 - **Clarity** — `clarity …` (process search, versions, captures, gaps, evidence, facets, export, generation, promotion, artifact imports, invite links, doctor, process landscape, process links, process tags, process summaries)
-- **Pulse** — `pulse …` (create, get, list, send message, refresh, stop, rename, share, duplicate, pdf/snapshot export, version history, restore, messages, answer HITL, connections, delete Pulse dashboards)
+- **Pulse** — `pulse …` (create, get, list, send message, refresh, refresh-schedule, stop, rename, share, duplicate, move to another team, pdf/snapshot export, version history, restore, messages, answer HITL, connections, delete Pulse dashboards)
 - **Skills & plugins** — `skills …`, `plugins …`
-- **Team** — `team current`, `team get`, `team members`, `team use`, `teams list`, `teams org`, `teams org-insights`, `teams org-metrics`, `teams org-usage`
+- **Team** — `team current`, `team get`, `team members`, `team use`, `teams list`, `teams org`, `teams orgs`, `teams create-org-team`, `teams invite-org-member`, `teams org-insights`, `teams org-metrics`, `teams org-usage`
 - **Bundled guides** — `guide …` (version-matched CLI guides for AI agents)
+- **Self-update** — `update` (update the installed CLI to the latest version)
 - **Low-level** — `api <method> <path>`
 
 For end-to-end recipes (create an agent → start a run → respond to
@@ -178,15 +179,21 @@ the CLI rather than restating per-command:
 - `--json` is available on every command that hits the API and is the
   shape to use in scripts.
 - Destructive operations (`duvo logout`, `duvo profiles remove`,
-  `duvo runs stop`, `duvo agents delete`, `duvo agent-folders delete`,
+  `duvo runs stop`, `duvo agents delete`, `duvo agents move`,
+  `duvo agent-folders delete`,
   `duvo cases delete`, `duvo cases clear`, `duvo cases bulk-delete`,
+  `duvo cases bulk-reprocess`, `duvo cases bulk-update-status`,
+  `duvo cases bulk-update-priority`,
   `duvo skills delete`, `duvo queues delete`, `duvo secrets delete`,
   `duvo credentials delete`, `duvo revision-secrets detach`,
-  `duvo revision-logins detach`, `duvo agents schedules delete`,
+  `duvo revision-logins detach`, `duvo revision-integrations remove`,
+  `duvo revision-integrations connections unpin`,
+  `duvo agents schedules delete`, `duvo agents case-triggers delete`,
   `duvo agents eval-rubrics remove`, `duvo agents eval-rubrics replace`,
   `duvo connections delete`, `duvo queue-labels delete`,
   `duvo integrations custom delete`, `duvo clarity process-labels delete`,
-  `duvo suggestions reject`, `duvo pulse delete`, …)
+  `duvo suggestions reject`, `duvo files delete`,
+  `duvo pulse delete`, `duvo pulse move`, …)
   prompt for confirmation in a TTY and refuse on a non-TTY stdin. Pass
   `-y` / `--yes` to skip the prompt — never pipe `yes` into the CLI to
   bypass the prompt; it explicitly refuses inferred consent from piped
