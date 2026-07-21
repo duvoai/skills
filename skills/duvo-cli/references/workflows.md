@@ -498,3 +498,91 @@ A handful of guarantees for scripts and CI pipelines:
     ./scripts/build-cases.sh > cases.json
     duvo cases create --queue "$queue_id" --from-file cases.json --json | jq .
 ```
+
+## 12. Read another team's data (multi-team OAuth)
+
+An OAuth login can belong to several teams, but every command runs
+against **one active team** — the profile's team (`duvo team use`) or,
+when unset, the team derived from the credential. `duvo teams list`
+shows all teams the login can act on; `--team <id>` is a **global** flag
+that retargets a single command to another team you're a member of.
+
+```bash
+# See every team this login can act on.
+duvo teams list --json | jq -r '.teams[] | "\(.id)  \(.name)"'
+
+# Read another team's resources without changing your default —
+# --team works on any command (OAuth profiles only).
+duvo agents list --team <team-id> --json | jq -r '.agents[] | "\(.id)  \(.name)"'
+duvo queues list --team <team-id> --json | jq -r '.queues[].name'
+
+# Prefer that team for the rest of the session instead of repeating --team:
+duvo team use <team-id>            # or: export DUVO_TEAM_ID=<team-id>
+```
+
+**Team-scoped vs org-scoped.** Most read commands — `agents list`,
+`queues list`, `cases list`, `clarity search`, `revisions get`, … —
+resolve against the **one active team** and return only that team's
+resources. A separate set of commands is **org-scoped** and takes an
+org id positionally, spanning every team in the org: `duvo teams org`,
+`duvo teams org-insights`, `duvo teams org-metrics`,
+`duvo teams org-usage`.
+
+```bash
+# List the organizations you belong to, then every team in one of them
+# (org-scoped: spans all teams, unlike the team-scoped reads above).
+duvo teams orgs
+duvo teams org <org-id> --json | jq -r '.teams[] | "\(.id)  \(.name)"'
+```
+
+⚠️ **The trap:** `agents get <id>`, `clarity overview <id>`, or any
+`… get <id>` returning **not found (exit 3)** for an ID you *know*
+exists almost always means the ID belongs to a **different team than
+the active one** — not that it was deleted. You're a member of the
+owning team, but the lookup is still scoped to your active team. Re-run
+with `--team <owning-team-id>`; find the owning team from `teams list`
+or the org landscape. API-key profiles are pinned to their single team
+and **reject** `--team` — use an OAuth profile to span teams.
+
+## 13. Read an agent's AOP and configuration
+
+`duvo agents get <id>` returns lean metadata (name, folder, feature
+flags) — **not** the agent's instructions. The **AOP** and the rest of
+the build config live in the agent's **revision**, read in two steps:
+list revisions to find the build id, then `revisions get`.
+
+```bash
+agent=<agent-id>
+
+# 1. Find the live build id (the one runs actually use). Fall back to the
+#    most recent build if none is marked live yet.
+build=$(
+  duvo revisions list --agent "$agent" --json \
+  | jq -r '(.builds[] | select(.status=="live") | .id) // .builds[0].id'
+)
+
+# 2. Read the revision and extract the AOP prompt text. `content` is an
+#    array of typed blocks (occasionally a plain string), so handle both.
+duvo revisions get "$build" --agent "$agent" --json \
+  | jq -r '[.build.config.data.input[]?
+            | (.content | if type == "string" then . else [.[]?.text] | join("\n") end)]
+           | join("\n")'
+
+# The same payload carries the model, too:
+duvo revisions get "$build" --agent "$agent" --json \
+  | jq -r '.build.config.data.models.agent.model'
+```
+
+To see the agent's **integrations and queue wiring**, don't dig through
+the revision JSON — use the dedicated commands, which report the slots
+and their linked queues/connections directly:
+
+```bash
+duvo revision-integrations list --agent "$agent" --revision "$build" --json
+duvo revision-integrations case-queue-setup --agent "$agent" --revision "$build"
+```
+
+⚠️ Read the **live** build, not the newest draft, when you want what
+runs actually execute — filter `status == "live"` as above; the latest
+revision may be an unpromoted draft. To read an agent that lives in
+another team, add `--team <id>` to both steps (workflow 12).
