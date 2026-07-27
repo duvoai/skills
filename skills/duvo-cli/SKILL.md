@@ -10,7 +10,7 @@ description: >
 license: MIT
 metadata:
   author: duvoai
-  version: "1.5.0"
+  version: "1.6.0"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---

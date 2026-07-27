@@ -288,8 +288,9 @@ surface.
 
 ## 6. Authorize a custom MCP server
 
-Two paths, depending on whether the MCP server supports OAuth Dynamic
-Client Registration (DCR):
+Three paths, depending on whether the MCP server supports OAuth Dynamic
+Client Registration (DCR) and whether you've already registered an
+OAuth client for it yourself:
 
 ```bash
 # Probe what tools the server exposes (no auth needed):
@@ -311,6 +312,17 @@ duvo connections create \
   --server-url https://mcp.example.com \
   --secret-header "Authorization=Bearer dv_xxx" \
   --header "X-Tenant=acme"
+
+# (c) OAuth-capable server that doesn't support DCR (e.g. a NetSuite
+#     Integration record) — pass the client you registered yourself and
+#     skip DCR entirely. Omit --oauth-client-secret for public clients
+#     (PKCE-only).
+duvo oauth mcp authorize \
+  --url https://example.suitetalk.api.netsuite.com/mcp \
+  --name "NetSuite" \
+  --integration-type custom_mcp \
+  --oauth-client-id "$NETSUITE_CLIENT_ID" \
+  --oauth-client-secret "$NETSUITE_CLIENT_SECRET"
 ```
 
 `--secret-header` values are encrypted at rest; `--header` values are
