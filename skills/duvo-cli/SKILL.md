@@ -155,7 +155,7 @@ The top-level groups are:
 - **Connections & integrations** — `integrations …`, `connections …`, `oauth …`
 - **Secrets & credentials** — `secrets …` (env-var secrets), `credentials …` (browser logins), `revision-secrets …`, `revision-logins …`
 - **Clarity** — `clarity …` (process search, versions, captures, gaps, evidence, facets, export, generation, promotion, artifact imports, invite links, doctor, process landscape, process links, process tags, process summaries)
-- **Pulse** — `pulse …` (create, get, list, send message, refresh, refresh-schedule, stop, rename, share, duplicate, move to another team, pdf/snapshot export, version history, restore, messages, answer HITL, connections, delete Pulse dashboards)
+- **Pulse** — `pulse …` (create, get, list, send message, refresh, stop, rename, share, duplicate, move to another team, pdf/snapshot export, version history, restore, messages, answer HITL, connections, delete Pulse dashboards)
 - **Skills & plugins** — `skills …`, `plugins …`
 - **Team** — `team current`, `team get`, `team members`, `team use`, `teams list`, `teams org`, `teams orgs`, `teams create-org-team`, `teams invite-org-member`, `teams org-insights`, `teams org-metrics`, `teams org-usage`
 - **Bundled guides** — `guide …` (version-matched CLI guides for AI agents)
