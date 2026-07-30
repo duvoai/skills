@@ -393,6 +393,11 @@ no org visibility).
 | `duvo clarity landscape node <node-id> [--org <org-id>] [--json]`                                 | Read one landscape node by ID.                                      |
 | `duvo clarity landscape captures [--org <org-id>] [--limit <n>] [--include-transcripts] [--json]` | List Clarity captures eligible for the process landscape.           |
 
+`get`, `tree`, `node`, and `search` return `priority`
+(`high` / `medium` / `low`, or `null` when the node has not been assessed),
+`priorityReasoning`, and `priorityAssessedAt` on every node. `search` also
+matches on the priority value.
+
 **Write commands:**
 
 | Command                                                                                                                                                                                                | Purpose                                                                                                                                                                                      |
@@ -403,6 +408,7 @@ no org visibility).
 | `duvo clarity landscape delete-node <node-id> [--org <org-id>] [--json]`                                                                                                                               | Delete a landscape node and its entire subtree.                                                                                                                                              |
 | `duvo clarity landscape generate [--org <org-id>] [--json]`                                                                                                                                            | Start async generation of the process landscape from eligible captures.                                                                                                                      |
 | `duvo clarity landscape propose-process --name <name> [--org <org-id>] [--description <text>] [--parent <node-id>] [--team <team-id>] [--materialization-mode auto\|proposal] [--json]`                | Propose a new process node in the landscape. `--materialization-mode proposal` records the proposed owning team WITHOUT creating a real process record.                                      |
+| `duvo clarity landscape set-priorities [--org <org-id>] [--set <node-id>=<high\|medium\|low>[:<reasoning>]]… [--clear <node-id>]… [--input <file\|->] [--json]`                                        | Set or clear heatmap priorities on up to 200 nodes in one all-or-nothing batch.                                                                                                              |
 
 ### Clarity process links
 
