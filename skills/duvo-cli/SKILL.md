@@ -10,7 +10,7 @@ description: >
 license: MIT
 metadata:
   author: duvoai
-  version: "1.6.0"
+  version: "1.7.0"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -151,6 +151,7 @@ The top-level groups are:
 - **Revisions** — `revisions …`, `revision-integrations …` (versioned configs)
 - **Runs** — `runs …` (start, get, message, stop, respond to HITL, evaluation)
 - **Queues & cases** — `queues …`, `queue-labels …`, `cases …`
+- **Notifications** — `notifications …` (list, get, feed, get-batch, counts, unread-count, mark-read, mark-batch-read, mark-all-read, dismiss, delete-read, delete-all)
 - **Files & sandboxes** — `files …`, `sandboxes …`
 - **Connections & integrations** — `integrations …`, `connections …`, `oauth …`
 - **Secrets & credentials** — `secrets …` (env-var secrets), `credentials …` (browser logins), `revision-secrets …`, `revision-logins …`
@@ -193,7 +194,8 @@ the CLI rather than restating per-command:
   `duvo connections delete`, `duvo queue-labels delete`,
   `duvo integrations custom delete`, `duvo clarity process-labels delete`,
   `duvo suggestions reject`, `duvo files delete`,
-  `duvo pulse delete`, `duvo pulse move`, …)
+  `duvo pulse delete`, `duvo pulse move`,
+  `duvo notifications delete-read`, `duvo notifications delete-all`, …)
   prompt for confirmation in a TTY and refuse on a non-TTY stdin. Pass
   `-y` / `--yes` to skip the prompt — never pipe `yes` into the CLI to
   bypass the prompt; it explicitly refuses inferred consent from piped
@@ -279,6 +281,12 @@ the CLI rather than restating per-command:
   support only `overview`, `status`, `captures`, `capture`, and `export`.
   Default output is compact; transcripts and media URLs are included only
   when a JSON command explicitly passes `--include-transcripts`.
+- **Notifications: batches vs individuals.** `duvo notifications feed`
+  returns a mix of individual notifications and per-agent batches;
+  `get-batch` and `mark-batch-read` only accept a batch ID (from `feed`
+  or a notification's `batchId`), not an individual notification ID. On
+  `notifications list`, `--sort importance` requires `--batch` — the CLI
+  rejects the combination locally if `--batch` is omitted.
 - **Clarity artifact imports use a two-phase API under the hood.** Use
   `duvo clarity import-artifact <process-id> <file>` for local Miro SVG,
   XML, PNG, or JPEG exports. It creates the signed URL, uploads bytes, and
