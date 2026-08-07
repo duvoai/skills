@@ -11,7 +11,7 @@ description: >
 license: MIT
 metadata:
   author: duvoai
-  version: "1.0.3"
+  version: "1.1.0"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -101,11 +101,11 @@ The five steps are the same in either mode; only the data source changes.
 
 2. **Read the transcript.** Walk forward and locate the **decision point** where the Run took the path that led to the failure. The final error message is the end of the chain, not its origin. _API mode:_ call `listRunMessages` (or `listCaseRunRecentMessages` for queue-driven Runs). _Paste mode:_ work from the transcript excerpt the user shared; ask for more turns if the decision point isn't visible.
 
-3. **Map the failure to a category** (see taxonomy below). Most Run failures fall into one of seven patterns. Name it.
+3. **Map the failure to a category** (see taxonomy below). Most Run failures fall into one of eight patterns. Name it.
 
 4. **Pull supporting evidence as needed.** Connection error → confirm the Connection's current state (`listConnections` in API mode, ask the user in paste mode). Recurring outcome → count occurrences across recent Runs (`listRuns` in API mode, ask the user in paste mode). Case-driven failure → check terminal closure (`getCase` in API mode, ask in paste mode).
 
-5. **Propose one fix.** Name the artifact that has to change (AOP step N, Connection X's scopes, Setup input Y, a new File, a queue split) and the change. If the fix is in the AOP, do not rewrite it — hand off to `aop-writer` (see below).
+5. **Propose one fix.** Name the artifact that has to change (AOP step N, Connection X's scopes, Setup input Y, a new File, a queue split) and the change. If the fix is in the AOP, do not rewrite it — hand off to `aop-writer` (see below). _Platform / infra failure:_ there is no artifact of the user's to change — say so plainly and route it to Duvo instead (see Output rule → Next step).
 
 ## Failure-mode taxonomy
 
@@ -124,6 +124,8 @@ Most Run failures are one of these. Name the category in your diagnosis.
 6. **Batch / iteration leak.** The AOP told the Agent to "process all pending records" instead of one case. Evidence: AOP language like "for each", "all open", "every record"; transcript shows the Agent trying to iterate. Fix: rewrite the AOP to handle a single case — the platform iterates.
 
 7. **Wrong decomposition.** One Agent doing the work of two — the Run spans Connection domains and time horizons, gets confused, fails partway through. Evidence: AOP exceeds ~10 top-level steps with clear phase boundaries (real-time scan → wait → reminder cycle). Fix: split into two Agents connected by `request_handover` or a queue.
+
+8. **Platform / infra failure.** The platform itself broke, not the Agent's configuration: the Run died before or outside its AOP, the platform's own tool layer errored, the same internal error repeats on every retry, or a Connection keeps failing after a clean reauthentication. Evidence: an infrastructure- or platform-level error rather than an upstream response from the user's own system, reproducing identically across Runs and independent of the case data — and no AOP, Setup, or Connection change would have prevented it. The discriminator against **Connection failure**: an expired token or a missing scope is the user's to fix; a Connection that fails again straight after a successful reauthentication is not. Fix: none in the user's artifacts — this one goes to Duvo (see Output rule → Next step), with the Run id, the Build id, the exact error, and what you ruled out.
 
 If you cannot place a failure in one of these, name the pattern plainly. Do not force-fit.
 
@@ -166,7 +168,7 @@ Return one structured response with these labelled sections, in this order:
 - **Where it went wrong** — the specific point in the transcript and the matching AOP step.
 - **Evidence** — one or two quoted lines from the transcript or the AOP. Quote, do not paraphrase.
 - **Fix** — one concrete change to one artifact.
-- **Next step** — e.g. "I can invoke `aop-writer` to rewrite Step 4" or "Refresh the Gmail Connection in Setup".
+- **Next step** — the immediate handoff, e.g. "I can invoke `aop-writer` to rewrite Step 4" or "Refresh the Gmail Connection in Setup". When the failure mode is **Platform / infra failure**, the next step is to get the diagnosis to Duvo rather than to change anything of the user's: if a support-escalation tool is in your tool list (Duvo's in-product chat), draft the escalation there — this diagnosis is its material (symptom, Run and Build ids, what you ruled out), and the user reviews the draft and sends it, so never tell them it's been reported. If no such tool is available, tell the user to raise it with Duvo support from the Duvo web app, and hand them this diagnosis to include.
 
 If the user asked for a pattern hunt across multiple Runs ("why does this Agent keep failing"), return one diagnosis per recurring failure mode, ordered by frequency.
 
