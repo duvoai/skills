@@ -10,7 +10,7 @@ description: >
 license: MIT
 metadata:
   author: duvoai
-  version: "1.7.0"
+  version: "1.8.0"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -156,7 +156,7 @@ The top-level groups are:
 - **Connections & integrations** — `integrations …`, `connections …`, `oauth …`
 - **Secrets & credentials** — `secrets …` (env-var secrets), `credentials …` (browser logins), `revision-secrets …`, `revision-logins …`
 - **Clarity** — `clarity …` (process search, versions, captures, gaps, evidence, facets, export, generation, promotion, artifact imports, invite links, doctor, process landscape, process links, process tags, process summaries)
-- **Pulse** — `pulse …` (create, get, list, send message, refresh, stop, rename, share, duplicate, move to another team, pdf/snapshot export, version history, restore, messages, answer HITL, connections, delete Pulse dashboards)
+- **Pulse** — `pulse …` (create, get, list, send message, attach files, refresh, stop, rename, share, duplicate, move to another team, pdf/snapshot export, version history, restore, messages, answer HITL, connections, delete Pulse dashboards)
 - **Skills & plugins** — `skills …`, `plugins …`
 - **Team** — `team current`, `team get`, `team members`, `team use`, `teams list`, `teams org`, `teams orgs`, `teams create-org-team`, `teams invite-org-member`, `teams org-insights`, `teams org-metrics`, `teams org-usage`
 - **Bundled guides** — `guide …` (version-matched CLI guides for AI agents)
@@ -185,7 +185,8 @@ the CLI rather than restating per-command:
   `duvo cases delete`, `duvo cases clear`, `duvo cases bulk-delete`,
   `duvo cases bulk-reprocess`, `duvo cases bulk-update-status`,
   `duvo cases bulk-update-priority`,
-  `duvo skills delete`, `duvo queues delete`, `duvo secrets delete`,
+  `duvo skills delete`, `duvo skills revisions delete`,
+  `duvo queues delete`, `duvo secrets delete`,
   `duvo credentials delete`, `duvo revision-secrets detach`,
   `duvo revision-logins detach`, `duvo revision-integrations remove`,
   `duvo revision-integrations connections unpin`,
@@ -292,6 +293,13 @@ the CLI rather than restating per-command:
   XML, PNG, or JPEG exports. It creates the signed URL, uploads bytes, and
   completes the import. For custom upload clients or artifact-chat
   workflows, use `duvo api` against the public route directly.
+- **Two ways to attach a file to Pulse.** `duvo pulse send-message <id>
+--message <text> --attach-file <path>` uploads and references a file
+  in one step — use it when you already know the instruction. `duvo
+pulse attach <id> <file>` only stages the file and prints its
+  attachment ID, for when the instruction is composed or sent
+  separately (e.g. from a script building the message body). Both
+  share the same 5-file, 25MB-each limit.
 
 ## When the CLI is the wrong tool
 
