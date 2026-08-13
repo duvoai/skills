@@ -158,7 +158,8 @@ The top-level groups are:
 - **Clarity** — `clarity …` (process search, versions, captures, gaps, evidence, facets, export, generation, promotion, artifact imports, invite links, doctor, process landscape, process links, process tags, process summaries)
 - **Pulse** — `pulse …` (create, get, list, send message, attach files, refresh, stop, rename, share, duplicate, move to another team, pdf/snapshot export, version history, restore, messages, answer HITL, connections, delete Pulse dashboards)
 - **Skills & plugins** — `skills …`, `plugins …`
-- **Team** — `team current`, `team get`, `team members`, `team use`, `teams list`, `teams org`, `teams orgs`, `teams create-org-team`, `teams invite-org-member`, `teams org-insights`, `teams org-metrics`, `teams org-usage`
+- **Team** — `team current`, `team get`, `team members`, `team use`, `teams list`, `teams org`, `teams orgs`, `teams create-org-team`, `teams org-insights`, `teams org-metrics`, `teams org-usage`
+- **Invitations** — `invite list`, `invite create`, `invite bulk`, `invite update`, `invite resend`, `invite delete`, `invite org-member`, `invite link get|create|delete`
 - **Bundled guides** — `guide …` (version-matched CLI guides for AI agents)
 - **Self-update** — `update` (update the installed CLI to the latest version)
 - **Low-level** — `api <method> <path>`
