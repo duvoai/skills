@@ -10,7 +10,7 @@ description: >
 license: MIT
 metadata:
   author: duvoai
-  version: "1.8.0"
+  version: "1.9.0"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -145,7 +145,7 @@ See `references/commands.md` for the full command tree with flags.
 The top-level groups are:
 
 - **Auth & profiles** — `login`, `logout`, `whoami`, `profiles …`
-- **Agents** — `agents …`, `agents delete`, `agents models`, `agents set-model`, `agents case-triggers …`, `agents schedules …`, `agents triggers …`, `agents memory …`, `agents eval-scores`, `agents eval-rubrics …`
+- **Agents** — `agents …`, `agents delete`, `agents models`, `agents set-model`, `agents case-triggers …`, `agents schedules …`, `agents triggers …`, `agents slack-triggers …`, `agents memory …`, `agents eval-scores`, `agents eval-rubrics …`
 - **Suggestions** — `suggestions …` (Connection suggestions: list, consume, reject)
 - **Agent folders** — `agent-folders …` (organize agents in a tree)
 - **Revisions** — `revisions …`, `revision-integrations …` (versioned configs)
@@ -158,7 +158,7 @@ The top-level groups are:
 - **Clarity** — `clarity …` (process search, versions, captures, gaps, evidence, facets, export, generation, promotion, artifact imports, invite links, doctor, process landscape, process links, process tags, process summaries)
 - **Pulse** — `pulse …` (create, get, list, send message, attach files, refresh, stop, rename, share, duplicate, move to another team, pdf/snapshot export, version history, restore, messages, answer HITL, connections, delete Pulse dashboards)
 - **Skills & plugins** — `skills …`, `plugins …`
-- **Team** — `team current`, `team get`, `team members`, `team use`, `teams list`, `teams org`, `teams orgs`, `teams create-org-team`, `teams org-insights`, `teams org-metrics`, `teams org-usage`
+- **Team** — `team current`, `team get`, `team members`, `team set-role`, `team remove-member`, `team leave`, `team use`, `teams list`, `teams org`, `teams orgs`, `teams create-org-team`, `teams org-insights`, `teams org-metrics`, `teams org-usage`
 - **Invitations** — `invite list`, `invite create`, `invite bulk`, `invite update`, `invite resend`, `invite delete`, `invite org-member`, `invite link get|create|delete`
 - **Bundled guides** — `guide …` (version-matched CLI guides for AI agents)
 - **Self-update** — `update` (update the installed CLI to the latest version)
@@ -192,12 +192,14 @@ the CLI rather than restating per-command:
   `duvo revision-logins detach`, `duvo revision-integrations remove`,
   `duvo revision-integrations connections unpin`,
   `duvo agents schedules delete`, `duvo agents case-triggers delete`,
+  `duvo agents slack-triggers delete`,
   `duvo agents eval-rubrics remove`, `duvo agents eval-rubrics replace`,
   `duvo connections delete`, `duvo queue-labels delete`,
   `duvo integrations custom delete`, `duvo clarity process-labels delete`,
   `duvo suggestions reject`, `duvo files delete`,
   `duvo pulse delete`, `duvo pulse move`,
-  `duvo notifications delete-read`, `duvo notifications delete-all`, …)
+  `duvo notifications delete-read`, `duvo notifications delete-all`,
+  `duvo team remove-member`, `duvo team leave`, …)
   prompt for confirmation in a TTY and refuse on a non-TTY stdin. Pass
   `-y` / `--yes` to skip the prompt — never pipe `yes` into the CLI to
   bypass the prompt; it explicitly refuses inferred consent from piped
@@ -294,6 +296,16 @@ the CLI rather than restating per-command:
   XML, PNG, or JPEG exports. It creates the signed URL, uploads bytes, and
   completes the import. For custom upload clients or artifact-chat
   workflows, use `duvo api` against the public route directly.
+- **Slack channel triggers need a connected workspace first.**
+  `agents slack-triggers create` fails unless the Slack workspace is
+  already bound to the agent — check with `agents slack-triggers
+workspaces <agent-id>` before creating, and pass `--workspace` when
+  the team has more than one installed workspace.
+- **Team member management has per-command role floors.** `team
+set-role` needs Manager and above (only an Owner can grant or remove
+  the Owner role); `team remove-member` needs Superadmin and above;
+  `team leave` works for any member. All three refuse to act on the
+  last remaining Owner.
 - **Two ways to attach a file to Pulse.** `duvo pulse send-message <id>
 --message <text> --attach-file <path>` uploads and references a file
   in one step — use it when you already know the instruction. `duvo
