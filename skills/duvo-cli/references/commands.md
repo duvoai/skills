@@ -375,6 +375,12 @@ The `update`, `duplicate`, and `delete` lifecycle commands support Clarity v1
 and v2 processes. Snapshot, post-processing, and Automation commands are v2
 only.
 
+`process-summaries` is scoped to the selected team and includes completed
+processes only. An empty result can mean that the selected team has no
+accessible completed processes; it does not prove that the organization has no
+Clarity data. For organization-wide discovery, use
+`duvo clarity landscape get --org <org-id> --json`.
+
 ### Write and mutate
 
 | Command                                                                                                                                                                                 | Purpose                                                                                                                                                                             |
@@ -424,10 +430,11 @@ falls back to `DUVO_ORG_ID`.
 ### Clarity process landscape
 
 `duvo clarity landscape …` reads and curates the org-level Clarity process
-landscape (hierarchical tree of area nodes and process nodes). Every
-subcommand requires `--org <org-id>` or the `DUVO_ORG_ID` environment
+landscape (hierarchical tree of area nodes and process nodes). Org-path
+subcommands require `--org <org-id>` or the `DUVO_ORG_ID` environment
 variable, and an OAuth profile with an org-level role (API-key profiles have
-no org visibility).
+no org visibility). Suggestion commands resolve their organization from the
+node and do not take `--org`.
 
 **Read commands:**
 
@@ -438,6 +445,7 @@ no org visibility).
 | `duvo clarity landscape search <query> [--org <org-id>] [--root <node-id>] [--json]`              | Filter landscape nodes by name, owner, process name, or id.         |
 | `duvo clarity landscape node <node-id> [--org <org-id>] [--json]`                                 | Read one landscape node by ID.                                      |
 | `duvo clarity landscape people [--org <org-id>] [--root <node-id>] [--json]`                      | Read the people on every process in the landscape in one request.   |
+| `duvo clarity landscape node-people <node-id> [--org <org-id>] [--json]`                          | List the people involved in one process.                            |
 | `duvo clarity landscape captures [--org <org-id>] [--limit <n>] [--include-transcripts] [--json]` | List Clarity captures eligible for the process landscape.           |
 
 `get`, `tree`, `node`, and `search` return `priority`
@@ -447,15 +455,38 @@ matches on the priority value.
 
 **Write commands:**
 
+Authorization is checked for each target. Organization Admins can perform all
+landscape writes except full landscape generation, which requires an
+Organization Owner. Any organization member can create a proposal. Creating an
+active area, reordering areas, assigning an owning team, and starting
+`organize` require an Organization Admin. For process-owned nodes, a Manager of
+the owning team can edit structure, priorities, people, and suggestions for
+that team; organization-wide targets still require an Organization Admin.
+
 | Command                                                                                                                                                                                                | Purpose                                                                                                                                                                                      |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `duvo clarity landscape create-area --name <name> [--org <org-id>] [--parent <node-id>] [--owner-label <label>] [--team <team-id>] [--description <text>] [--creation-mode active\|proposal] [--json]` | Create an area node in the process landscape. `--creation-mode proposal` adds it for review instead of asserting it exists: any organization member may do it, and it is idempotent by name. |
 | `duvo clarity landscape rename-node <node-id> [--org <org-id>] [--name <name>] [--owner-label <label>] [--clear-owner-label] [--json]`                                                                 | Rename a landscape node or update its owner label.                                                                                                                                           |
 | `duvo clarity landscape move-node <node-id> [--org <org-id>] [--parent <node-id>\|--root] [--json]`                                                                                                    | Move a node under a new parent or to the root.                                                                                                                                               |
-| `duvo clarity landscape delete-node <node-id> [--org <org-id>] [--json]`                                                                                                                               | Delete a landscape node and its entire subtree.                                                                                                                                              |
+| `duvo clarity landscape delete-node <node-id> [--org <org-id>] [-y] [--json]`                                                                                                                          | Delete a landscape node and its entire subtree. Destructive — prompts for confirmation.                                                                                                      |
 | `duvo clarity landscape generate [--org <org-id>] [--json]`                                                                                                                                            | Start async generation of the process landscape from eligible captures.                                                                                                                      |
 | `duvo clarity landscape propose-process --name <name> [--org <org-id>] [--description <text>] [--parent <node-id>] [--team <team-id>] [--materialization-mode auto\|proposal] [--json]`                | Propose a new process node in the landscape. `--materialization-mode proposal` records the proposed owning team WITHOUT creating a real process record.                                      |
 | `duvo clarity landscape set-priorities [--org <org-id>] [--set <node-id>=<high\|medium\|low>[:<reasoning>]]… [--clear <node-id>]… [--input <file\|->] [--json]`                                        | Set or clear heatmap priorities on up to 200 nodes in one all-or-nothing batch.                                                                                                              |
+| `duvo clarity landscape add-process <process-id> --parent <node-id> [--org <org-id>] [--json]`                                                                                                         | File an existing Unsorted process under an area.                                                                                                                                             |
+| `duvo clarity landscape reorder-areas [--org <org-id>] (--area <node-id>…\|--input <file\|->) [--parent <node-id>] [--json]`                                                                           | Replace the display order for a complete sibling group. Duplicate or partial lists are rejected.                                                                                             |
+| `duvo clarity landscape accept-node <node-id> [--org <org-id>] [--json]`                                                                                                                               | Accept a proposed area into the active landscape.                                                                                                                                            |
+| `duvo clarity landscape decline-node <node-id> [--org <org-id>] [-y] [--json]`                                                                                                                         | Reject a proposal. Proposed descendants are removed and real processes underneath move to Unsorted. Destructive — prompts for confirmation.                                                  |
+| `duvo clarity landscape assign-team <node-id> --team <team-id> [--org <org-id>] [--intent assign\|accept-proposal] [--json]`                                                                           | Set an explicitly selected owning team. This accepts a proposed process or moves an existing process and its Clarity data.                                                                   |
+| `duvo clarity landscape add-person <node-id> [--org <org-id>] [--name <name>] [--email <email>] [--role <role>] [--json]`                                                                              | Add a placeholder or invite a person. Supplying an email grants process access and sends an invitation.                                                                                      |
+| `duvo clarity landscape update-person <node-id> <person-id> [--org <org-id>] (--role <role>\|--clear-role) [--json]`                                                                                   | Change or clear the role a person plays in a process.                                                                                                                                        |
+| `duvo clarity landscape remove-person <node-id> <person-id> [--org <org-id>] [-y] [--json]`                                                                                                            | Remove a person and revoke the process access granted when they were added. Destructive — prompts for confirmation.                                                                          |
+| `duvo clarity landscape batch-people --input <file\|-> [--org <org-id>] [--json]`                                                                                                                      | Add people across several process nodes in one bounded batch, with an outcome for every requested pair.                                                                                      |
+| `duvo clarity landscape organize [--org <org-id>] [--json]`                                                                                                                                            | Start an asynchronous organization-wide pass over eligible Unsorted processes. HTTP 202 acknowledges submission, not completion; re-run `landscape get` to observe progressive results.      |
+| `duvo clarity landscape suggestions accept-team <node-id> <suggestion-id> [--json]`                                                                                                                    | Accept a pending owning-team suggestion.                                                                                                                                                     |
+| `duvo clarity landscape suggestions dismiss-team <node-id> <suggestion-id> [--json]`                                                                                                                   | Dismiss a pending owning-team suggestion.                                                                                                                                                    |
+| `duvo clarity landscape suggestions accept-capture <node-id> <suggestion-id> [--json]`                                                                                                                 | Accept a pending capture suggestion and create its capture request.                                                                                                                          |
+| `duvo clarity landscape suggestions dismiss-capture <node-id> <suggestion-id> [--json]`                                                                                                                | Dismiss a pending capture suggestion.                                                                                                                                                        |
+| `duvo clarity landscape suggestions assign-capture <node-id> <request-id> (--user <user-id>\|--unassign) [--json]`                                                                                     | Assign or unassign an open capture request.                                                                                                                                                  |
 
 ### Clarity process links
 
