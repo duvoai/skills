@@ -49,7 +49,12 @@ Every branch of a consumer AOP must end in **exactly one** of:
 - `postpone_case` — temporary wait; the case returns to the queue.
 - `request_handover` — pass the claimed case to a different Agent.
 
-If a branch does not end in one of these calls, Duvo auto-marks the case `Failed` with no context. This is the most common failure mode for queue-driven AOPs — every branch must reach a terminal call.
+If a branch does not end in one of these calls, Duvo settles the case for the Agent — and the AOP no longer controls the result:
+
+- The Run finished its work cleanly → the case is auto-completed (the activity feed marks it as such, with no explanation of the work) and its real outcome is left to Duvo's case evaluation. A branch that should have failed or postponed is now indistinguishable from a success until evaluation catches it.
+- The Run ended with an error, was cut off mid-work, or requested a handover the platform rejected → the case is failed with no reason at all. (A Run a human stops is neither: its case is canceled.)
+
+Neither is an acceptable ending to design for: both throw away the reason, and a missing terminal call is still the most common defect in queue-driven AOPs. Every branch must reach a terminal call.
 
 ## Handover vs. terminality
 
