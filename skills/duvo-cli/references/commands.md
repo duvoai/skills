@@ -410,6 +410,69 @@ Clarity data. For organization-wide discovery, use
 Supported artifact import content types are `image/svg+xml`,
 `application/xml`, `text/xml`, `image/png`, and `image/jpeg`.
 
+### Clarity process library
+
+| Command                                                                                                            | Purpose                                                                     |
+| ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| `duvo clarity folders list [--json]`                                                                               | List folders for the selected team.                                         |
+| `duvo clarity folders create --name <name> [--json]`                                                               | Create a process folder.                                                    |
+| `duvo clarity folders update <folder-id> --name <name> [--json]`                                                   | Rename a process folder.                                                    |
+| `duvo clarity folders delete <folder-id> [-y] [--json]`                                                            | Delete a folder and move its processes to Unfiled.                          |
+| `duvo clarity folders reorder --folder <id> […] [--json]`                                                          | Set folder order, passing every team folder exactly once.                   |
+| `duvo clarity folders setup-from-landscape [--json]`                                                               | Create missing folders linked to Process Landscape groups.                  |
+| `duvo clarity folders move-processes --process <id> […] (--folder <id>\|--to-root) [--json]`                       | Move one or more processes into a folder or back to Unfiled.                |
+| `duvo clarity folders file-suggested [--json]`                                                                     | File visible Unfiled processes into linked suggested folders.               |
+| `duvo clarity guidance create <process-id> (--content <text>\|--content-file <path\|->) [--json]`                  | Create transformation guidance.                                             |
+| `duvo clarity guidance update <process-id> (--content <text>\|--content-file <path\|->) [--json]`                  | Replace transformation guidance.                                            |
+| `duvo clarity settings get [--json]`                                                                               | Read Clarity settings for the selected team.                                |
+| `duvo clarity settings update [settings…] [--json]`                                                                | Update team size, cost, language, email reports, and company context.       |
+| `duvo clarity sharing get <process-id> [--json]`                                                                   | Read a process's public-sharing state.                                      |
+| `duvo clarity sharing set <process-id> (--enabled\|--disabled) [--proposal-enabled\|--proposal-disabled] [--json]` | Update public sharing and proposal inclusion.                               |
+| `duvo clarity members list <process-id> [--json]`                                                                  | List users with accepted process access.                                    |
+| `duvo clarity members remove <process-id> <member-id> [-y] [--json]`                                               | Revoke a member's accepted process access.                                  |
+| `duvo clarity capture-admin upload-document <process-id> <file> [--extra-capture-request-id <id>] [--json]`        | Upload a PDF, TXT, Markdown, or BPMN document capture (25 MB maximum).      |
+| `duvo clarity capture-admin upload-video <process-id> <file> [--extra-capture-request-id <id>] [--json]`           | Upload a supported video capture (2 GB maximum).                            |
+| `duvo clarity capture-admin phone-interview <process-id> --phone <e164> [--language <code>] [--json]`              | Start a phone interview capture.                                            |
+| `duvo clarity capture-admin invite-notetaker <process-id> --meeting-url <url> [--json]`                            | Invite the Clarity notetaker to a supported meeting.                        |
+| `duvo clarity capture-admin delete <process-id> <capture-id> [-y] [--json]`                                        | Delete a process capture.                                                   |
+| `duvo clarity invite-link get <process-id> [--json]`                                                               | Read active interview invite-link metadata.                                 |
+| `duvo clarity invite-link create <process-id> [--json]`                                                            | Create or regenerate an interview invite link. Alias: `create-invite-link`. |
+| `duvo clarity invite-link delete <process-id> [-y] [--json]`                                                       | Revoke the active interview invite link.                                    |
+| `duvo clarity invite-link inspect <token> [--json]`                                                                | Inspect an invite without accepting it.                                     |
+| `duvo clarity invite-link accept <token> [--json]`                                                                 | Accept an invite as the matching verified user.                             |
+| `duvo clarity exports start <process-id> --connection-instance <id> --bpmn-file <path\|-> [--json]`                | Start a SAP Signavio export from BPMN XML (5 MB maximum).                   |
+| `duvo clarity exports list [--json]`                                                                               | List active exports for the selected team and user.                         |
+| `duvo clarity exports get <export-id> [--json]`                                                                    | Read an accessible export by ID.                                            |
+| `duvo clarity portfolio get [--json]`                                                                              | Read portfolio intelligence for the selected team.                          |
+| `duvo clarity portfolio generate [--json]`                                                                         | Start portfolio-intelligence generation for the selected team.              |
+| `duvo clarity upgrade <process-id> [--json]`                                                                       | Upgrade an eligible legacy process to Clarity v2.                           |
+| `duvo clarity artifact-chat-stop <process-id> <conversation-id> [--json]`                                          | Stop an in-flight Artifact Chat reply.                                      |
+| `duvo clarity artifact-chat-delete <process-id> <conversation-id> [-y] [--json]`                                   | Delete an open or working Artifact Chat conversation.                       |
+
+### Clarity interview libraries
+
+Organization and landscape-node commands accept `--org <org-id>` or
+`DUVO_ORG_ID`. Team commands use the selected team.
+
+| Command                                                                                                            | Purpose                                                 |
+| ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
+| `duvo clarity interviews org list [--scope organization\|team] [--org <id>] [--limit <n>] [--offset <n>] [--json]` | List interviews across an organization.                 |
+| `duvo clarity interviews org get <interview-id> [--org <id>] [--json]`                                             | Read an organization interview and transcript.          |
+| `duvo clarity interviews org rename <interview-id> --title <title> [--org <id>] [--json]`                          | Rename an organization interview.                       |
+| `duvo clarity interviews org finalize <interview-id> [--org <id>] [--json]`                                        | Finalize a recording organization interview.            |
+| `duvo clarity interviews org delete <interview-id> [--org <id>] [-y] [--json]`                                     | Delete an organization interview.                       |
+| `duvo clarity interviews org upload-document <file> [--org <id>] [--json]`                                         | Upload an organization document interview.              |
+| `duvo clarity interviews org invite-notetaker --meeting-url <url> [--title <title>] [--org <id>] [--json]`         | Invite the notetaker to an organization meeting.        |
+| `duvo clarity interviews node list <node-id> [--org <id>] [--limit <n>] [--offset <n>] [--json]`                   | List interviews linked to a Process Landscape node.     |
+| `duvo clarity interviews node delete <node-id> <interview-id> [--org <id>] [-y] [--json]`                          | Delete an interview linked to a Process Landscape node. |
+| `duvo clarity interviews team list [--limit <n>] [--offset <n>] [--json]`                                          | List team-level interviews.                             |
+| `duvo clarity interviews team upload-document <file> [--json]`                                                     | Upload a team-level document interview.                 |
+| `duvo clarity interviews team delete <interview-id> [-y] [--json]`                                                 | Delete a team-level interview.                          |
+
+The CLI exposes durable interview records and capture creation. Browser recording
+sessions, live audio/media transport, signed-upload internals, and ingestion
+callbacks are deliberately not commands.
+
 ### Clarity process tags
 
 `duvo clarity process-labels …` manages an org-scoped tag palette and the tags
