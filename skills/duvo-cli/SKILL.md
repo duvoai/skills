@@ -10,7 +10,7 @@ description: >
 license: MIT
 metadata:
   author: duvoai
-  version: "1.9.0"
+  version: "1.9.1"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -178,8 +178,9 @@ the CLI rather than restating per-command:
 - `--team <id>` is a **global** flag that overrides the resolved team
   for that single invocation (OAuth profiles only; API-key profiles
   reject a mismatched team).
-- `--json` is available on every command that hits the API and is the
-  shape to use in scripts.
+- `--json` is available on nearly every command that hits the API and is
+  the shape to use in scripts. `duvo credentials delete` is the known
+  exception — it has no `--json` flag.
 - Destructive operations (`duvo logout`, `duvo profiles remove`,
   `duvo runs stop`, `duvo agents delete`, `duvo agents move`,
   `duvo agent-folders delete`,
