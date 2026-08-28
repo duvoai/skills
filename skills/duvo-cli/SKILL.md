@@ -150,7 +150,7 @@ The top-level groups are:
 - **Agent folders** — `agent-folders …` (organize agents in a tree)
 - **Revisions** — `revisions …`, `revision-integrations …` (versioned configs)
 - **Runs** — `runs …` (start, get, message, stop, respond to HITL, evaluation)
-- **Queues & cases** — `queues …`, `queue-labels …`, `cases …`
+- **Queues & cases** — `queues …`, `queues eval-rubrics …`, `queue-labels …`, `cases …`
 - **Notifications** — `notifications …` (list, get, feed, get-batch, counts, unread-count, mark-read, mark-batch-read, mark-all-read, dismiss, delete-read, delete-all)
 - **Files & sandboxes** — `files …`, `sandboxes …`
 - **Connections & integrations** — `integrations …`, `connections …`, `oauth …`
@@ -195,6 +195,7 @@ the CLI rather than restating per-command:
   `duvo agents schedules delete`, `duvo agents case-triggers delete`,
   `duvo agents slack-triggers delete`,
   `duvo agents eval-rubrics remove`, `duvo agents eval-rubrics replace`,
+  `duvo queues eval-rubrics remove`, `duvo queues eval-rubrics replace`,
   `duvo connections delete`, `duvo queue-labels delete`,
   `duvo integrations custom delete`, `duvo clarity process-labels delete`,
   `duvo suggestions reject`, `duvo files delete`,
