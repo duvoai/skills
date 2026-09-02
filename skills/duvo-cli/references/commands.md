@@ -444,7 +444,6 @@ Supported artifact import content types are `image/svg+xml`,
 | `duvo clarity members remove <process-id> <member-id> [-y] [--json]`                                               | Revoke a member's accepted process access.                                  |
 | `duvo clarity capture-admin upload-document <process-id> <file> [--extra-capture-request-id <id>] [--json]`        | Upload a PDF, TXT, Markdown, or BPMN document capture (25 MB maximum).      |
 | `duvo clarity capture-admin upload-video <process-id> <file> [--extra-capture-request-id <id>] [--json]`           | Upload a supported video capture (2 GB maximum).                            |
-| `duvo clarity capture-admin phone-interview <process-id> --phone <e164> [--language <code>] [--json]`              | Start a phone interview capture.                                            |
 | `duvo clarity capture-admin invite-notetaker <process-id> --meeting-url <url> [--json]`                            | Invite the Clarity notetaker to a supported meeting.                        |
 | `duvo clarity capture-admin delete <process-id> <capture-id> [-y] [--json]`                                        | Delete a process capture.                                                   |
 | `duvo clarity invite-link get <process-id> [--json]`                                                               | Read active interview invite-link metadata.                                 |
