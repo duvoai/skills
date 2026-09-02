@@ -16,6 +16,8 @@ The Agent knows how to translate "place the order" into the right tool call. Don
 
 The single exception is the **case lifecycle tools** (`claim_case`, `update_case`, `postpone_case`, `complete_case`, `fail_case`, `add_cases`, `list_cases`, `request_handover`). These are platform primitives whose names matter to the runtime — reference them by name in the step where they apply. See `case-lifecycle.md`.
 
+`request_handover` is the one that needs more than its name: its **target Agent** is expressed as an `@Agent` mention in the handoff step (e.g. "hand over to **@Billing Specialist**"), because the mention — not the tool name — is what configures the handover at run time. Write the target as a readable `@Target Agent` placeholder for the caller to resolve.
+
 ## Human-readable to a non-engineer
 
 The reader of last resort is an operations manager, not a developer. If a sentence requires technical context to parse, rewrite it.

@@ -22,6 +22,7 @@ Used by Agents with the `case-queue-consumer` Connection. A consumer AOP process
 - **`postpone_case`** — release the case and schedule a re-claim. The `postpone_to` parameter accepts a relative duration (`"2h"`, `"1d"`, `"1w"`) or an ISO timestamp. Use only for cases that _can_ complete later (waiting on a response, an SLA, a rate limit). Do NOT postpone for permanent or environment issues — use `fail_case` instead.
 - **`complete_case`** — terminal success. Mark the case done after the AOP's work is finished.
 - **`fail_case`** — terminal failure for permanent issues (missing data, broken credentials, unavailable tools).
+- **`request_handover`** — pass the claimed case to a different Agent. This tool exists at run time only when the AOP configures a handover target by @-mentioning that Agent — see "Configuring the handover target" below.
 
 ## The postpone-then-retry idiom
 
@@ -63,7 +64,18 @@ Handover and case terminality are **mutually exclusive**.
 - If the AOP plans to call `request_handover` in a branch, do **not** also call `complete_case`, `fail_case`, or `postpone_case` in the same branch. The platform passes the claimed case to the target Agent automatically.
 - Conversely, every consumer AOP that does **not** request a handover must end every branch with `complete_case`, `fail_case`, or `postpone_case`.
 
-The `handover` Connection itself is added automatically at runtime — do not list it in the Setup, and do not need to mention it in the AOP except via the `request_handover` tool name.
+The `handover` Connection itself is added automatically at run time — do not list it in the Setup. But naming `request_handover` in prose does **not**, on its own, configure a handover: the tool only exists at run time once the AOP @-mentions the target Agent (see below).
+
+## Configuring the handover target
+
+A handoff to another Agent is configured by **@-mentioning that Agent at the handoff step** — not by describing `request_handover` in prose. The @-mention is what registers the target Agent as an allowed handover target and makes the `request_handover` tool available at run time. Without a matching mention, `request_handover` is never injected and the branch cannot hand over.
+
+So an AOP branch that hands off must:
+
+1. **@-mention the target Agent** in the step where the handoff happens — e.g. "If the request is a billing question, hand over to **@Billing Specialist**." This skill has no access to the user's Agents, so write the mention as a readable placeholder — `@Target Agent` — for the caller to resolve to the real Agent.
+2. **Call `request_handover`** to that Agent as the branch's terminal action, and nothing else (see "Handover vs. terminality" above).
+
+The set of `@Agent` mentions in the AOP is the source of truth for the handover targets: a `request_handover` branch with no mention is a defect.
 
 ## When to use which terminal
 

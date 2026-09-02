@@ -1,12 +1,13 @@
 # AOP Examples
 
-Three canonical, full-text AOPs. Use them as calibration anchors before returning a draft — your output should read like one of these.
+Four canonical, full-text AOPs. Use them as calibration anchors before returning a draft — your output should read like one of these.
 
 The examples are progressively more complex:
 
 1. **Standalone deep AOP** — a single Agent that does its whole job in one Run, no queues.
 2. **Queue consumer with Human-in-the-Loop** — a consumer AOP with HITL gating and terminal closure.
 3. **Postpone-driven reminder step** — a producer+consumer AOP using the postpone-then-retry idiom.
+4. **Triage consumer with a handover** — a consumer AOP that hands a case to a specialist Agent via an `@Agent` mention.
 
 ---
 
@@ -141,6 +142,41 @@ What makes this excellent:
 - Step 3 handles the "no reminder needed" branch with a terminal `complete_case`.
 - The producer side (`add_cases` to the next queue) is wired in step 6 before the consumer-side `complete_case` in step 7.
 - Every branch terminates.
+
+---
+
+## Example 4 — Triage consumer with a handover
+
+The Agent is a queue consumer that triages inbound support cases. General questions it resolves itself; billing questions it hands to a specialist Agent. The handoff is configured by **@-mentioning the target Agent** in the handover step — that mention, not the tool name, is what makes `request_handover` work at run time. Handover and case terminality are mutually exclusive, so the handover branch ends in `request_handover` and nothing else.
+
+```markdown
+# GOAL
+
+Triage one inbound support case: answer a general question directly, or hand a billing question to the billing specialist.
+
+# STEPS
+
+1. Call `claim_case` to get the case data. The case carries: customer email, subject, message body, and account ID.
+
+2. Classify the request from the subject and body:
+   - If it concerns invoices, charges, refunds, or payment methods: mark as "billing".
+   - Otherwise: mark as "general".
+
+3. If the request is "billing":
+   - Call `update_case` to record `category: billing` and a one-line summary of what the customer needs, so the specialist has context.
+   - Hand the case to **@Billing Specialist**: call `request_handover` to that Agent. Do not also call `complete_case`, `fail_case`, or `postpone_case` — the platform passes the claimed case to the target Agent automatically.
+
+4. If the request is "general":
+   - Use **Gmail** to send the customer a reply that answers their question, referencing the original subject.
+   - Call `update_case` with `outcome: answered-directly`, then `complete_case`.
+```
+
+What makes this excellent:
+
+- The handoff target is an `@Agent` mention (`@Billing Specialist`) in the handover step — the mention is what configures the handover; naming `request_handover` alone would hand off nothing.
+- The handover branch ends in `request_handover` only; the self-resolve branch ends in `complete_case`. Handover and terminality stay mutually exclusive.
+- Step 1 is `claim_case`; every branch reaches a terminal action.
+- `update_case` writes the summary the specialist needs before the handover.
 
 ---
 

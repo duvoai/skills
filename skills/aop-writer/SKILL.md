@@ -57,7 +57,7 @@ A great AOP weaves these patterns into the `# STEPS` section.
 
 5. **The postpone-then-retry idiom for SLAs and waiting periods.** On first pickup, set a flag on the case and `postpone_case` with the wait duration; on second pickup, do the real work. This is how an AOP expresses "wait N days then act" without a separate Agent per stage. See `references/case-lifecycle.md`.
 
-6. **Terminal closure on every branch.** For queue-consuming Agents, every branch of the AOP must end with `complete_case`, `fail_case`, `postpone_case`, or `request_handover`. For standalone Agents, every branch must end with a clear terminal action (send the email, save the row, post the result). Cases left in an ambiguous state are the #1 failure mode.
+6. **Terminal closure on every branch.** For queue-consuming Agents, every branch of the AOP must end with `complete_case`, `fail_case`, `postpone_case`, or `request_handover`. A `request_handover` branch must also **@-mention its target Agent** at the handoff step (e.g. "hand over to **@Billing Specialist**") — the mention is what configures the handover, so naming the tool in prose alone hands off nothing. For standalone Agents, every branch must end with a clear terminal action (send the email, save the row, post the result). Cases left in an ambiguous state are the #1 failure mode.
 
 ## Case lifecycle (queue-driven Agents)
 
@@ -65,7 +65,7 @@ If the Agent is a producer, consumer, or producer+consumer (it has the `case-que
 
 - `claim_case`, `update_case`, `postpone_case`, `complete_case`, `fail_case`
 - `add_cases`, `list_cases` (producers)
-- `request_handover` (when the Agent passes the case to a different Agent)
+- `request_handover` (when the Agent passes the case to a different Agent — name the target as an `@Agent` mention at the handoff step, not in prose; the mention is what makes the handover work)
 
 Read `references/case-lifecycle.md` for the per-tool contract, the postpone-then-retry idiom, and the handover-vs-terminality rule before writing a queue-driven AOP.
 
