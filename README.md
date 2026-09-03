@@ -7,10 +7,11 @@ Official [agent skills](https://skills.sh) for [Duvo](https://duvo.ai) — the A
 
 These skills teach Claude and other coding agents to operate Duvo directly: manage Agents, debug failed Runs, and write the AOPs that drive them. How you install depends on which agent you use — see below.
 
-There are two ways to install, depending on where you work:
+There are three ways to install, depending on where you work:
 
 - **[In the Claude app (plugin)](#use-in-the-claude-app-plugin)** — for Claude Desktop / claude.ai users. One install adds the skills *and* the Duvo connector; no terminal needed.
-- **[In a coding agent (npx)](#quickstart-coding-agents)** — for Claude Code, Codex, Cursor, and other compatible tools. Installs skills individually or as a set, paired with the `duvo` CLI.
+- **[As an Agent Plugin (portable)](#use-as-an-agent-plugin-portable)** — for Cursor, Hermes, OpenClaw, VS Code, and any other client that speaks the Agent Plugins standard. One install adds the skills *and* the Duvo MCP server.
+- **[Everywhere else via `skills.sh`](#everywhere-else-via-skillssh)** — installs the skills on their own, individually or as a set, paired with the `duvo` CLI.
 
 ## Use in the Claude app (plugin)
 
@@ -38,9 +39,18 @@ Notes:
 
 ## Use as an Agent Plugin (portable)
 
-This repository is also a spec-conformant [Agent Plugin](https://agent-plugins.org) — `plugin.json` and `mcp.json` at the root, with the skills discovered from `skills/`. Any Agent Plugins-capable client can install it straight from the repo and get all seven skills plus the Duvo MCP server (`https://api.duvo.ai/v2/mcp`, `streamable-http`) in one go.
+This repository is also a spec-conformant [Agent Plugin](https://agent-plugins.org). Any Agent Plugins-capable client can install it straight from the repo and get all skills plus the Duvo MCP server in one go.
 
-## Quickstart (coding agents)
+| Agent | How to install | Docs |
+| --- | --- | --- |
+| **Cursor** | **Customize** in the sidebar → find the plugin → **Install**, choosing project or user scope. Cursor reads the format from the manifest, so an Agent Plugin installs like any other. To distribute it across a team, add `duvoai/skills` under **Dashboard → Plugins → Add Marketplace → Import from Repo** (Teams and Enterprise). | [Cursor plugins](https://cursor.com/docs/plugins#the-agent-plugins-standard) |
+| **Hermes** | `hermes plugins install duvoai/skills --no-enable`, then `hermes plugins list` and `hermes plugins enable <plugin-name>`. Portable packages stay disabled until you enable them explicitly. | [Hermes plugins](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins#portable-agent-plugins-v1-packages) |
+| **OpenClaw** | `openclaw plugins install duvo --marketplace duvoai/skills`. OpenClaw calls these bundles and maps them onto its native skills and MCP tools. | [OpenClaw bundles](https://docs.openclaw.ai/plugins/bundles) |
+| **VS Code** | Run **Chat: Install Plugin From Source** from the Command Palette and enter `https://github.com/duvoai/skills`. To pin it for a workspace instead, add `"duvoai/skills"` to `chat.plugins.marketplaces` in `settings.json`. | [VS Code agent plugins](https://code.visualstudio.com/docs/agent-customization/agent-plugins) |
+| **Claude app / Claude Code** | Uses Claude's own manifest in `.claude-plugin/` rather than the Agent Plugin path — see [above](#use-in-the-claude-app-plugin). | [Claude Code plugins](https://docs.claude.com/en/docs/claude-code/plugins) |
+| **Anything else** | No plugin support yet? Install the skills on their own via [`skills.sh`](https://www.skills.sh/) — see [below](#everywhere-else-via-skillssh). Note that route carries no MCP server, so it needs the `duvo` CLI. | [skills.sh](https://skills.sh/duvoai/skills) |
+
+## Everywhere else via [`skills.sh`](https://www.skills.sh/)
 
 Get from zero to a working setup in four steps — install the skills, add the CLI they call, and sign in:
 
@@ -63,28 +73,16 @@ duvo whoami
 
 Then just ask your agent — for example: *"Why did Run `run_abc123` fail?"*, *"Rewrite this AOP to be clearer"*, or *"List my failed runs from yesterday"*.
 
+### Install all skills
+
+```bash
+npx skills add duvoai/skills
+```
+
 ### Install a specific skill
 
 ```bash
 npx skills add duvoai/skills --skill duvo-cli
-```
-
-### Install for a specific agent
-
-Use `--agent` to target one or more agents (you can pass several, space-separated):
-
-```bash
-# Claude Code
-npx skills add duvoai/skills --agent claude-code
-
-# Codex
-npx skills add duvoai/skills --agent codex
-
-# Cursor
-npx skills add duvoai/skills --agent cursor
-
-# Multiple agents at once
-npx skills add duvoai/skills --agent claude-code codex cursor
 ```
 
 ### Update installed skills
@@ -97,19 +95,19 @@ Each skill is self-contained — install the whole set or just the one you need.
 
 | Skill | In plugin | Description |
 | --- | :---: | --- |
-| **duvo-cli** | — | Drive the Duvo platform from the terminal via the `duvo` CLI (`@duvoai/cli`) — manage agents, runs, cases, queues, files, skills, connections, and Clarity processes, or hit any endpoint with `duvo api`. |
-| **aop-writer** | ✓ | Draft, rewrite, or critique a Duvo Agent AOP, returning a single Markdown document in the canonical GOAL / STEPS / NOTES shape. |
-| **run-debugger** | ✓ | Investigate why a Duvo Run failed or produced the wrong outcome — reads the Run transcript and active Build, names the root cause from a fixed failure-mode taxonomy, and proposes one concrete fix. |
-| **workflow-debugger** | ✓ | Audit a Duvo Agent — or a multi-Agent workflow connected by a Queue — across many Runs to find systemic inefficiencies and quality issues, then recommend concrete AOP and architecture changes. |
-| **connection-doctor** | ✓ | Diagnose and health-check the Connections and credentials a Duvo Agent relies on — reads each Build's Connections and their live state, names the problem, and proposes one concrete fix. |
-| **improve-agent** | ✓ | Run the guided, end-to-end loop that makes one Duvo Agent better — survey its setup, ground findings in recent Runs via the debugger skills, propose concrete changes, and apply them on your yes. |
-| **improve-queue** | ✓ | Run the guided, end-to-end loop that makes one Duvo Queue — and the producer→consumer workflow around it — better, ending in applied AOP, topology, and trigger changes. |
+| [**duvo-cli**](skills/duvo-cli) | — | Drive the Duvo platform from the terminal via the `duvo` CLI (`@duvoai/cli`) — manage agents, runs, cases, queues, files, skills, connections, and Clarity processes, or hit any endpoint with `duvo api`. |
+| [**aop-writer**](skills/aop-writer) | ✓ | Draft, rewrite, or critique a Duvo Agent AOP, returning a single Markdown document in the canonical GOAL / STEPS / NOTES shape. |
+| [**run-debugger**](skills/run-debugger) | ✓ | Investigate why a Duvo Run failed or produced the wrong outcome — reads the Run transcript and active Build, names the root cause from a fixed failure-mode taxonomy, and proposes one concrete fix. |
+| [**workflow-debugger**](skills/workflow-debugger) | ✓ | Audit a Duvo Agent — or a multi-Agent workflow connected by a Queue — across many Runs to find systemic inefficiencies and quality issues, then recommend concrete AOP and architecture changes. |
+| [**connection-doctor**](skills/connection-doctor) | ✓ | Diagnose and health-check the Connections and credentials a Duvo Agent relies on — reads each Build's Connections and their live state, names the problem, and proposes one concrete fix. |
+| [**improve-agent**](skills/improve-agent) | ✓ | Run the guided, end-to-end loop that makes one Duvo Agent better — survey its setup, ground findings in recent Runs via the debugger skills, propose concrete changes, and apply them on your yes. |
+| [**improve-queue**](skills/improve-queue) | ✓ | Run the guided, end-to-end loop that makes one Duvo Queue — and the producer→consumer workflow around it — better, ending in applied AOP, topology, and trigger changes. |
 
 ## Learn more
 
 - [Duvo website](https://duvo.ai)
 - [Documentation](https://docs.duvo.ai)
-- [Duvo MCP server](https://docs.duvo.ai/mcp/duvo-mcp-server) — the connector the plugin bundles
+- [Duvo MCP server](https://docs.duvo.ai/mcp/duvo-mcp-server)
 - [Duvo CLI on npm](https://www.npmjs.com/package/@duvoai/cli)
 
 ## License
