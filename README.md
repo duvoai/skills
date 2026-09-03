@@ -36,6 +36,10 @@ Notes:
 - Already added the Duvo connector manually? The plugin brings its own plugin-scoped copy of the same tools — remove the manually-added connector after installing, so you don't end up with two copies of every Duvo tool.
 - **Updates:** when a new plugin version is released, the plugin manager shows an **Update** button — one click and you're current.
 
+## Use as an Agent Plugin (portable)
+
+This repository is also a spec-conformant [Agent Plugin](https://agent-plugins.org) — `plugin.json` and `mcp.json` at the root, with the skills discovered from `skills/`. Any Agent Plugins-capable client can install it straight from the repo and get all seven skills plus the Duvo MCP server (`https://api.duvo.ai/v2/mcp`, `streamable-http`) in one go.
+
 ## Quickstart (coding agents)
 
 Get from zero to a working setup in four steps — install the skills, add the CLI they call, and sign in:
