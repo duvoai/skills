@@ -15,6 +15,7 @@ description: >
   triggers with your tools). The boundary vs workflow-debugger: that skill is
   the read-only audit; this is the interactive loop that ends in an applied
   change. For a single standalone Agent, use improve-agent instead.
+license: MIT
 metadata:
   author: duvoai
   version: "1.0.0"

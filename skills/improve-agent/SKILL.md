@@ -14,6 +14,7 @@ description: >
   a new Build, config with your tools). The boundary against workflow-debugger:
   that skill is the read-only audit; this skill is the interactive loop that
   ends in an applied change and calls workflow-debugger to do the analysis.
+license: MIT
 metadata:
   author: duvoai
   version: "1.0.0"
