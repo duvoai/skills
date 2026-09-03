@@ -8,6 +8,9 @@ description: >
   `duvo api` — instead of clicking through the Duvo web UI or
   hand-crafting `curl` calls.
 license: MIT
+compatibility: >
+  Requires the duvo CLI (npm install -g @duvoai/cli) on PATH and an
+  authenticated session (duvo login).
 metadata:
   author: duvoai
   version: "1.9.1"

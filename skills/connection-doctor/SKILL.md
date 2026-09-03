@@ -8,6 +8,7 @@ description: >
   each Build's Connections and their live state via the Duvo public API, names
   the problem, and proposes one concrete fix — handing off to run-debugger when
   the evidence lives in a single failing Run.
+license: MIT
 ---
 
 # Connection Doctor
