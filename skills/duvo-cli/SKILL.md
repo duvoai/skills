@@ -74,7 +74,7 @@ duvo --profile acme whoami       # one-off override for a single command
 - Profile: `--profile <name>` flag → `DUVO_PROFILE` env → `defaultProfile` in config.
 - Credential: `DUVO_API_KEY` env (bypasses the profile's stored credential lookup) → the profile's stored credential.
 - Base URL: `DUVO_API_BASE_URL` env → the profile's `apiBaseUrl` → `https://api.duvo.ai`.
-- Team: `--team <id>` flag → `DUVO_TEAM_ID` env → the OAuth profile's `defaultTeamId` (set via `duvo team use`) → the team derived from the active credential. API-key profiles are always pinned to the key's team and reject a different `--team` value.
+- Team: `--team <id>` flag → `DUVO_TEAM_ID` env → the profile's `defaultTeamId` → the team derived from the active credential. Team-scoped API keys reject a different `--team`; user-scoped keys can select any team the user can access.
 
 ## Reading the help
 
@@ -179,11 +179,12 @@ the CLI rather than restating per-command:
 - `--profile <name>` is a **global** flag that overrides the default
   profile for that single invocation.
 - `--team <id>` is a **global** flag that overrides the resolved team
-  for that single invocation (OAuth profiles only; API-key profiles
-  reject a mismatched team).
+  for that single invocation. OAuth and user-scoped API-key profiles can
+  select an accessible team; team-scoped API-key profiles reject a different
+  team.
 - `--json` is available on nearly every command that hits the API and is
-  the shape to use in scripts. `duvo credentials delete` is the known
-  exception — it has no `--json` flag.
+  the shape to use in scripts. Use it only when the command's help or command
+  reference lists it; never invent an unsupported flag or parse table output.
 - Destructive operations (`duvo logout`, `duvo profiles remove`,
   `duvo runs stop`, `duvo agents delete`, `duvo agents move`,
   `duvo agent-folders delete`,
@@ -270,10 +271,13 @@ the CLI rather than restating per-command:
     custom MCP, …). They don’t overlap — attach secrets with
     `revision-secrets`, logins with `revision-logins`, and connection
     slots with `revision-integrations connections pin`.
-- **Multi-team OAuth profiles.** An OAuth login can belong to several
-  teams. Use `duvo teams list` to see all teams, then `duvo team use <id>`
-  to set the default, or `--team <id>` per-command. API-key
-  profiles are always single-team and reject `--team`.
+- **Multi-team OAuth and user-scoped API-key profiles.** An OAuth login,
+  or an API key not pinned to a single team by the server (a _user-scoped_
+  key), can act on several teams. Use `duvo teams list` to see all teams,
+  then `duvo team use <id>` to set the default, or `--team <id>` per-command
+  — both work for these profiles. A _team-scoped_ API key is the one
+  exception: the server already pins it to one team, so it cannot target a
+  different team via `--team`.
 - **Reconnecting an expired OAuth connection.** Don't create a new
   connection for a stale one — pass `--reconnect-instance-id <id>` to
   `duvo oauth native start` or `duvo oauth mcp authorize` with the

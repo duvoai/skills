@@ -37,10 +37,10 @@ You read; you do not edit Agents, AOPs, Connections, or cases.
 
 You operate in one of two modes depending on what tools are available in your current session:
 
-- **API mode** — the Duvo public API is exposed as MCP tools (`getRun`, `listRunMessages`, `getRevision`, …). Use them to pull the Run's transcript and the active Build directly. This is the customer-side experience (Claude Code / Claude Desktop with the Duvo MCP attached).
-- **Paste mode** — no Duvo MCP tools are available (e.g. Duvo's in-product chat surface). Ask the user to paste the Run ID, the AOP that was in effect, the final error or relevant transcript excerpt, and any Connection / case context. Work from what they share.
+- **API mode** — use the available Duvo public API transport. This can be MCP tools (`getRun`, `listRunMessages`, `getRevision`, …) or the `duvo` CLI through Bash (`duvo runs get`, `duvo runs messages`, `duvo revisions get <id> --agent <agent-id>` — `--agent` is required). With the CLI, always pass `--json` and parse JSON, never table output.
+- **Paste mode** — neither Duvo MCP tools nor the `duvo` CLI are available. Ask the user to paste the Run ID, the AOP that was in effect, the final error or relevant transcript excerpt, and any Connection / case context. Work from what they share.
 
-Detect the mode by checking whether the API operations listed below appear in your tool list. If they do, prefer API mode and use them. If they don't, switch to paste mode and ask the user for the data before diagnosing. Do not invent transcript content in either mode.
+Detect the mode by checking for the MCP operations below or the `duvo-cli` skill. Prefer API mode when either transport is available. Otherwise, switch to paste mode and ask the user for the data before diagnosing. Do not invent transcript content in either mode.
 
 The diagnosis, the failure-mode taxonomy, the fix shape, and the output rule are identical across modes — only the **data-gathering step** differs.
 
@@ -213,12 +213,12 @@ Use Duvo's nouns when describing the failure and the fix. Never substitute — t
 
 - `aop-writer` — once you've named the failure, hand off the in-effect AOP and the change request; this skill never rewrites AOPs itself.
 - `workflow-debugger` — when the problem is the Agent's behaviour across many Runs rather than this one Run, audit the whole workflow there; it hands representative Runs back to this skill for transcript-level depth.
-- `duvo-cli` — alternative to MCP for API mode (`duvo runs get`, `duvo runs messages`, `duvo revisions get`); useful when the user is debugging from a terminal.
+- `duvo-cli` — alternative to MCP for API mode (`duvo runs get`, `duvo runs messages`, `duvo revisions get <id> --agent <agent-id>`); useful when the user is debugging from a terminal.
 
 ## Resources
 
 - [Duvo](https://duvo.ai) — product website
 - [Duvo documentation](https://docs.duvo.ai) — building Agents, AOPs, Connections, queues
 - [Web app](https://app.duvo.ai) — open the Run, inspect the transcript and the Build that ran it
-- [Duvo CLI (`@duvoai/cli`)](https://www.npmjs.com/package/@duvoai/cli) — alternative to MCP for API-mode reads (`duvo runs get`, `duvo runs messages`, `duvo revisions get`); pairs with the `duvo-cli` skill
+- [Duvo CLI (`@duvoai/cli`)](https://www.npmjs.com/package/@duvoai/cli) — alternative to MCP for API-mode reads (`duvo runs get`, `duvo runs messages`, `duvo revisions get <id> --agent <agent-id>`); pairs with the `duvo-cli` skill
 - [Public skill repository](https://github.com/duvoai/skills) — the MIT-licensed community release of this skill, packaged for installation in third-party Claude Code setups
