@@ -1,0 +1,14 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "duvo",
+  "version": "1.0.0",
+  "description": "Operate Duvo from your agent: debug failed Runs, audit Agents and Queues, doctor Connections, and write AOPs — with the Duvo MCP server wired in.",
+  "author": {
+    "name": "Duvo",
+    "url": "https://duvo.ai"
+  },
+  "homepage": "https://docs.duvo.ai",
+  "repository": "https://github.com/duvoai/skills",
+  "license": "MIT",
+  "keywords": ["duvo", "agents", "automation", "aop", "queues", "operations"]
+}
