@@ -13,7 +13,7 @@ compatibility: >
   authenticated session (duvo login).
 metadata:
   author: duvoai
-  version: "1.9.1"
+  version: "1.10.0"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -148,7 +148,7 @@ See `references/commands.md` for the full command tree with flags.
 The top-level groups are:
 
 - **Auth & profiles** — `login`, `logout`, `whoami`, `profiles …`
-- **Agents** — `agents …`, `agents delete`, `agents models`, `agents set-model`, `agents case-triggers …`, `agents schedules …`, `agents triggers …`, `agents slack-triggers …`, `agents memory …`, `agents eval-scores`, `agents eval-rubrics …`
+- **Agents** — `agents …`, `agents delete`, `agents move`, `agents duplicate`/`clone`, `agents models`, `agents set-model`, `agents case-triggers …`, `agents schedules …`, `agents triggers …`, `agents slack-triggers …`, `agents memory …`, `agents eval-scores`, `agents eval-rubrics …`
 - **Suggestions** — `suggestions …` (Connection suggestions: list, consume, reject)
 - **Agent folders** — `agent-folders …` (organize agents in a tree)
 - **Revisions** — `revisions …`, `revision-integrations …` (versioned configs)
@@ -159,7 +159,7 @@ The top-level groups are:
 - **Connections & integrations** — `integrations …`, `connections …`, `oauth …`
 - **Secrets & credentials** — `secrets …` (env-var secrets), `credentials …` (browser logins), `revision-secrets …`, `revision-logins …`
 - **Clarity** — `clarity …` (process search, versions, captures, gaps, evidence, facets, export, generation, promotion, artifact imports, invite links, doctor, process landscape, process links, process tags, process summaries)
-- **Pulse** — `pulse …` (create, get, list, send message, attach files, refresh, stop, rename, share, duplicate, move to another team, pdf/snapshot export, version history, restore, messages, answer HITL, connections, delete Pulse dashboards)
+- **Pulse** — `pulse …` (create, get, list, send message, attach files, refresh, stop, rename, share, duplicate, move to another team, pdf/snapshot export, version history, restore, messages, answer HITL, connections, comment threads, delete Pulse dashboards)
 - **Skills & plugins** — `skills …`, `plugins …`
 - **Team** — `team current`, `team get`, `team members`, `team set-role`, `team remove-member`, `team leave`, `team use`, `teams list`, `teams org`, `teams orgs`, `teams create-org-team`, `teams org-insights`, `teams org-metrics`, `teams org-usage`
 - **Invitations** — `invite list`, `invite create`, `invite bulk`, `invite update`, `invite resend`, `invite delete`, `invite org-member`, `invite link get|create|delete`
@@ -197,7 +197,7 @@ the CLI rather than restating per-command:
   `duvo revision-logins detach`, `duvo revision-integrations remove`,
   `duvo revision-integrations connections unpin`,
   `duvo agents schedules delete`, `duvo agents case-triggers delete`,
-  `duvo agents slack-triggers delete`,
+  `duvo agents triggers delete`, `duvo agents slack-triggers delete`,
   `duvo agents eval-rubrics remove`, `duvo agents eval-rubrics replace`,
   `duvo queues eval-rubrics remove`, `duvo queues eval-rubrics replace`,
   `duvo connections delete`, `duvo queue-labels delete`,
@@ -295,7 +295,8 @@ the CLI rather than restating per-command:
   Default output is compact; transcripts and media URLs are included only
   when a JSON command explicitly passes `--include-transcripts`.
 - **Notifications: batches vs individuals.** `duvo notifications feed`
-  returns a mix of individual notifications and per-agent batches;
+  returns a mix of individual notifications and notification batches
+  grouped by Agent or Queue;
   `get-batch` and `mark-batch-read` only accept a batch ID (from `feed`
   or a notification's `batchId`), not an individual notification ID. On
   `notifications list`, `--sort importance` requires `--batch` — the CLI
