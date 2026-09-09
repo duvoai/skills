@@ -13,6 +13,10 @@ High-level commands (`duvo agents create`, etc.) are sugar over this —
 they share the same HTTP client, auth resolution, output pipeline, and
 exit codes.
 
+Use only documented public API routes. Put organization or team scope in the
+documented path or parameters: global `--team` does not rewrite a raw API
+path. A missing high-level command is not permission to invent an endpoint.
+
 ## Synopsis
 
 ```text

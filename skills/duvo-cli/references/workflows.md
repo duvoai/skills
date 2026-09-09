@@ -3,9 +3,13 @@
 End-to-end recipes for the most common things people do with `duvo`.
 Each workflow is written as a shell session a user can paste into a
 terminal (or adapt for CI), with `jq` used to pull IDs from JSON
-output. Everything assumes `duvo login` has already stored a profile.
+output. Standalone use assumes a configured profile. Managed sessions follow
+the host runtime instructions: skip first-time setup and authentication probes,
+read the named references first, and pass an explicit target team on commands
+that use request-team scope. Ownership flags are not request scope; see
+`commands.md` before assigning a landscape team.
 
-## 1. First-time setup
+## 1. First-time setup (manual standalone use only)
 
 ```bash
 # 1. Install
@@ -30,7 +34,7 @@ duvo whoami
 # Create the agent non-interactively. --no-build skips creating an initial
 # build (omit it to get a default starter build).
 agent_id=$(
-  duvo agents create \
+  duvo agents create --team <target-team-id> \
     --name "Customer onboarding" \
     --input "Process new customer onboarding requests from the inbox." \
     --json \
@@ -116,7 +120,7 @@ list`.
 
 ```bash
 # 1. Create the queue.
-queue=$(duvo queues create --name "Inbound invoices" --json | jq -r .queue.id)
+queue=$(duvo queues create --team <target-team-id> --name "Inbound invoices" --json | jq -r .queue.id)
 
 # 2. Producer: attaches case-queue-producer on the agent's live revision
 #    and maps the queue. The producer creates cases when it runs.
@@ -212,7 +216,7 @@ duvo queues agents <queue-id>
 # 5. Smoke test: drop one test case and watch the consumer pick it up.
 #    Delete the test case afterwards (duvo cases delete <case-id> -y).
 duvo cases create --queue <queue-id> --title "setup smoke test"
-duvo runs list --agent "$agent" --limit 1
+duvo runs list --team <target-team-id> --agent "$agent" --limit 1
 ```
 
 ### Add and inspect cases
@@ -353,7 +357,7 @@ duvo revision-integrations list \
   --agent "$agent_id" --revision "$revision" --json
 
 #    …then find the user's connection for each integration type…
-duvo connections list --type slack --json
+duvo connections list --team <target-team-id> --type slack --json
 
 #    …and pin it to the slot.
 duvo revision-integrations connections pin <connection-id> \
@@ -506,57 +510,46 @@ A handful of guarantees for scripts and CI pipelines:
     DUVO_API_KEY: ${{ secrets.DUVO_API_KEY }}
   run: |
     set -euo pipefail
-    queue_id="$(duvo queues list --json | jq -r '.queues[] | select(.name=="Onboarding") | .id')"
+    queue_id="$(duvo queues list --team <target-team-id> --json | jq -r '.queues[] | select(.name=="Onboarding") | .id')"
     ./scripts/build-cases.sh > cases.json
     duvo cases create --queue "$queue_id" --from-file cases.json --json | jq .
 ```
 
 ## 12. Read another team's data (multi-team OAuth)
 
-An OAuth login can belong to several teams, but every command runs
-against **one active team** — the profile's team (`duvo team use`) or,
-when unset, the team derived from the credential. `duvo teams list`
-shows all teams the login can act on; `--team <id>` is a **global** flag
-that retargets a single command to another team you're a member of.
+OAuth and user-scoped API-key credentials can act on accessible teams. For
+commands that use request-team scope, pass `--team <target-team-id>` explicitly
+in managed sessions, even when the target is the configured default. Select
+the target under the host runtime's rules; do not change profile defaults.
 
 ```bash
-# See every team this login can act on.
+# List accessible teams when the task needs that inventory.
 duvo teams list --json | jq -r '.teams[] | "\(.id)  \(.name)"'
 
-# Read another team's resources without changing your default —
-# --team works on any command, for both OAuth and API-key profiles.
-duvo agents list --team <team-id> --json | jq -r '.agents[] | "\(.id)  \(.name)"'
-duvo queues list --team <team-id> --json | jq -r '.queues[].name'
-
-# Prefer that team for the rest of the session instead of repeating --team:
-duvo team use <team-id>            # or: export DUVO_TEAM_ID=<team-id>
+# Read resources in the requested team.
+duvo agents list --team <target-team-id> --json | jq -r '.agents[] | "\(.id)  \(.name)"'
+duvo queues list --team <target-team-id> --json | jq -r '.queues[].name'
 ```
 
-**Team-scoped vs org-scoped.** Most read commands — `agents list`,
-`queues list`, `cases list`, `clarity search`, `revisions get`, … —
-resolve against the **one active team** and return only that team's
-resources. A separate set of commands is **org-scoped** and takes an
-org id positionally, spanning every team in the org: `duvo teams org`,
-`duvo teams org-insights`, `duvo teams org-metrics`,
-`duvo teams org-usage`.
+In manual standalone setup, `duvo team use <team-id>` changes the profile's
+default. That does not replace explicit request scope in a managed session.
+
+**Team, resource, and organization scope differ.** `agents list`, `queues list`,
+and `runs list` use the selected team. Resource-ID commands such as `agents get`,
+`revisions get`, and `cases list --queue` use the requested IDs and may ignore
+`--team`. A not-found response does not establish a team mismatch; check the
+requested ID and documented operation instead of blindly retrying with a flag.
+Raw `duvo api` requests require scope in the documented path or parameters;
+`--team` does not rewrite a path. Organization commands take `--org` or a
+positional organization ID as documented:
 
 ```bash
-# List the organizations you belong to, then every team in one of them
-# (org-scoped: spans all teams, unlike the team-scoped reads above).
-duvo teams orgs
+duvo teams orgs --json
 duvo teams org <org-id> --json | jq -r '.teams[] | "\(.id)  \(.name)"'
 ```
 
-⚠️ **The trap:** `agents get <id>`, `clarity overview <id>`, or any
-`… get <id>` returning **not found (exit 3)** for an ID you _know_
-exists almost always means the ID belongs to a **different team than
-the active one** — not that it was deleted. You're a member of the
-owning team, but the lookup is still scoped to your active team. Re-run
-with `--team <owning-team-id>`; find the owning team from `teams list`
-or the org landscape. `--team` works the same for API-key profiles as
-for OAuth. Without it, a single-team API key infers its team
-automatically; a multi-team (user-scoped) key errors and requires
-`--team` to pick one.
+Cross-team writes need confirmation in managed sessions. Team-scoped API keys
+cannot act for another team; changing a flag does not grant access.
 
 ## 13. Read an agent's AOP and configuration
 
@@ -598,5 +591,6 @@ duvo revision-integrations case-queue-setup --agent "$agent" --revision "$build"
 
 ⚠️ Read the **live** build, not the newest draft, when you want what
 runs actually execute — filter `status == "live"` as above; the latest
-revision may be an unpromoted draft. To read an agent that lives in
-another team, add `--team <id>` to both steps (workflow 12).
+revision may be an unpromoted draft. These revision commands are scoped by
+the Agent and Build IDs; global `--team` does not change their resource path.
+For a failed Run, use its recorded `build_id` instead of the current live Build.

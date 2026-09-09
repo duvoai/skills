@@ -15,7 +15,7 @@ description: >
 license: MIT
 metadata:
   author: duvoai
-  version: "1.1.0"
+  version: "1.2.0"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -48,14 +48,12 @@ If the sweep surfaces a recurring failure that needs transcript-level depth, han
 
 ## Operating mode
 
-You operate in one of two modes depending on what tools are available in your current session:
+Use this session's configured Duvo access to perform the operations below. Follow its runtime instructions for invocation and parameter lookup. Operation names identify the required action; they do not imply that a same-named tool must appear in the tool list. Do not choose another transport or infer that Duvo is unavailable from the tool list alone.
 
-- **API mode** — the Duvo public API is reachable, either as MCP tools (`listRuns`, `getRevision`, `listQueueAgents`, …) or via the `duvo` CLI (`@duvoai/cli`). Both hit the same public API; use whichever is in front of you to pull the run set, the topology, and the AOPs directly. This is the normal mode in Claude Code / Claude Desktop with the Duvo MCP attached, or in a terminal with `duvo` installed.
-- **Paste mode** — no Duvo API access (e.g. an offline review of a workflow). Ask the user to paste the recent Run list (status, case titles, eval scores), the producer/consumer setup, and the AOPs in effect. Work from what they share.
+- **API mode** — use configured Duvo access to pull the Run set, topology, and AOPs directly.
+- **Paste mode** — in a standalone environment with no configured Duvo access, ask for the recent Run list (status, case titles, eval scores), producer/consumer setup, and AOPs in effect.
 
-Detect the mode by checking whether the operations below appear in your tool list (or whether `duvo` is on PATH). If so, prefer API mode. If not, switch to paste mode and ask for the data before diagnosing. Do not invent run data, eval scores, or AOP content in either mode.
-
-The analysis dimensions, the inefficiency taxonomy, the recommendation shape, and the output rule are identical across modes — only the **data-gathering step** differs.
+The analysis dimensions, taxonomy, recommendation shape, and output rule are identical across modes; only data gathering differs. Do not invent Run data, eval scores, or AOP content.
 
 ## The single most important rule
 
@@ -77,15 +75,15 @@ From either you can derive the rest — the queue from the Agent's Runs, the par
 
 ## Tools — read-only public API operations (API mode)
 
-In API mode these are the operations you call. Each maps to a `duvo` CLI command for terminal users; the MCP tool names are listed first.
+In API mode these identify the required reads. Use only filters supported by the configured runtime; do not assume every transport exposes the same parameters.
 
-- `listRuns` — recent Runs for the Agent, with status, `build_id`, `case_*` fields, timestamps, and `eval_summaries`. Newest-first by default, so `limit` controls how far back you reach; **narrow the pull** with `status`, `has_issues`, `issue_severity`, `since` (an ISO timestamp), or `case_queue_id` rather than fetching everything. CLI: `duvo runs list --agent <id> --limit 20 --json` (the envelope is `{ data: [...], total }`; `--limit` defaults to 20, max 100). The CLI exposes `--status` and `--has-issues`; `issue_severity` and `since` are available on the API tool.
-- `getRevision` — a single Build, including its `config` (which holds the AOP). Pass the `build_id` from recent Runs. CLI: `duvo revisions get <build-id> --agent <id> --json`.
-- `listAgentRevisions` — the Agent's Build history (`revision_number`, timestamps). CLI: `duvo revisions list --agent <id> --json`.
-- `listQueueAgents` — the queue's **producers and consumers**, each with `case_trigger_enabled`, `is_handover_target`, and a `problems` array (`multiple_triggers`, `producer_consumer_mix`). The fastest read for a topology problem — one call, no run sample. CLI: `duvo queues agents <queue-id> --json`.
-- `listCases` / `getQueue` — the Queue's **backlog and state**. `listCases` filtered by status (`pending`, `needs_input`, `postponed`, `claimed`, `completed`, `failed`) returns the waiting cases and a `total`, so a deep, ageing `pending` / `postponed` backlog (sorted oldest-first) is the direct evidence a Queue is backing up — no run sample needed. CLI: `duvo cases list --queue <id> --status postponed,needs_input --sort-order asc --json` / `duvo queues get <queue-id> --json`.
-- `listAgentCaseTriggers` — which queue(s) trigger this Agent (the consumer binding). CLI: `duvo agents case-triggers list <agent-id> --json`.
-- `getAgent` — Agent-level metadata (name, delivery settings). CLI: `duvo agents get <id> --json`.
+- `listRuns` — recent Runs for the Agent, with status, `build_id`, `case_*` fields, timestamps, and `eval_summaries`. Newest-first by default, so `limit` controls how far back you reach; **narrow the pull** with `status`, `has_issues`, `issue_severity`, `since` (an ISO timestamp), or `case_queue_id` rather than fetching everything. Use a small initial limit (20 by default, max 100) and the filters the configured operation supports.
+- `getRevision` — a single Build, including its `config` (which holds the AOP). Pass the `build_id` from recent Runs.
+- `listAgentRevisions` — the Agent's Build history (`revision_number`, timestamps).
+- `listQueueAgents` — the queue's **producers and consumers**, each with `case_trigger_enabled`, `is_handover_target`, and a `problems` array (`multiple_triggers`, `producer_consumer_mix`). The fastest read for a topology problem — one call, no run sample.
+- `listCases` / `getQueue` — the Queue's **backlog and state**. `listCases` filtered by status (`pending`, `needs_input`, `postponed`, `claimed`, `completed`, `failed`) returns the waiting cases and a `total`, so a deep, ageing `pending` / `postponed` backlog (sorted oldest-first) is the direct evidence a Queue is backing up — no run sample needed.
+- `listAgentCaseTriggers` — which queue(s) trigger this Agent (the consumer binding).
+- `getAgent` — Agent-level metadata (name, delivery settings).
 - `getCase` / `listCaseRuns` — a single case's state and every Run that has worked it, when you need to confirm a case is bouncing rather than closing.
 
 **Match the data to the question.** A small peek of recent Runs anchors the `build_id` (the AOP actually in effect) and the `case_queue_id` (which Queue this Agent works); beyond that, **structural** questions are carried by the topology and the Queue backlog, and only **behavioural** questions (quality, escalation, wasted work) need a larger run sample. Don't default to a big run pull — fetch what the lens needs.
@@ -94,8 +92,8 @@ In API mode these are the operations you call. Each maps to a `duvo` CLI command
 
 In paste mode, ask for the minimum needed — matched to the lens, not a big run dump:
 
-1. **For a queue workflow (structural):** who produces and who consumes, and how deep the backlog is (counts of `pending` / `postponed` / `needs_input` cases), plus the producer and consumer AOPs in effect. `duvo queues agents <queue-id> --json` and `duvo cases list --queue <id> --status postponed,needs_input --json` if they have the CLI.
-2. **For a quality / behavioural question:** a recent Run sample — status, case title, and eval score per Run (`duvo runs list --agent <id> --limit 20 --json`; add `--status failed` or `--has-issues true` to narrow) — plus the eval `final_comment` text across the affected Runs.
+1. **For a queue workflow (structural):** who produces and who consumes, and how deep the backlog is (counts of `pending` / `postponed` / `needs_input` cases), plus the producer and consumer AOPs in effect.
+2. **For a quality / behavioural question:** a recent Run sample — status, case title, and eval score per Run (narrowed to failures or issues when appropriate) — plus the eval `final_comment` text across the affected Runs.
 3. **Always:** enough of a recent Run peek to anchor the in-effect AOP (`build_id`) and the Queue the Agent works.
 
 Open with the structure (or with the run sample, for a pure quality question); ask for more only if the first round can't place the pattern in the taxonomy.
@@ -108,7 +106,7 @@ The steps are the same in either mode; only the data source changes. The order i
 
 2. **For a queue workflow, read the structure.** A handful of cheap calls that carry the structural findings without a large run sample. _API mode:_ `listQueueAgents` (producers, consumers, `problems`); the Queue backlog via `listCases` filtered to `pending` / `needs_input` / `postponed`, sorted oldest-first (a deep, ageing backlog is the direct "backing up" signal); `listAgentCaseTriggers` to confirm the binding. _Paste mode:_ ask who produces, who consumes, and how deep the backlog is. A standalone Agent with no `case_queue_id` has no topology — skip to step 4.
 
-3. **Read the AOPs at the seam.** Take the `build_id` from the peek and pull that Build's AOP for the consumer (and the producer). _API mode:_ `getRevision(build_id)` / `duvo revisions get <build-id> --agent <id> --json` — the AOP is in `config`. _Paste mode:_ ask the user to paste the AOP in effect. Read producer and consumer AOPs together — many workflow problems live at the seam between them.
+3. **Read the AOPs at the seam.** Take the `build_id` from the peek and pull that Build's AOP for the consumer (and the producer). _API mode:_ `getRevision` for that `build_id` — the AOP is in `config`. _Paste mode:_ ask the user to paste the AOP in effect. Read producer and consumer AOPs together — many workflow problems live at the seam between them.
 
 4. **Widen the run sample only for behavioural questions.** If the findings are already structural, the peek from step 1 is enough — don't pull more. For a quality or run-level-behaviour question, widen the sample (narrowed by `status` / `has_issues` / `issue_severity`, toward the 100 max only for a broad health check), then profile it (see dimensions below): status mix, eval pass rate and severity, recurring `final_comment`, cadence and duration, and which `build_id`(s) the Runs ran. Counts here become your behavioural evidence. _API mode:_ `listRuns` filtered to the Agent. _Paste mode:_ ask the user for the list.
 
@@ -193,7 +191,7 @@ If the user asked only about one dimension ("is this Agent over-escalating?"), a
 2. **Determine scope.** Single Agent ("audit this Agent") vs. workflow ("why does this queue back up", "analyse this producer→consumer flow"). The first profiles one Agent's Runs; the second adds the topology and reads both AOPs.
 3. **Determine the lens.** Efficiency (speed, cost, wasted Runs, batching) vs. quality (eval scores, recurring defects) vs. reliability (closure, escalation). Lead with the lens the user named; surface the others only if the data makes them unavoidable.
 
-You have no access to anything outside your tool list (API mode) or what the user shared (paste mode). Do not infer the contents of Files, Connections' upstream systems, or Runs you didn't pull. The run set, the topology, and the AOPs are the source of truth.
+Use only data returned by configured Duvo access (API mode) or shared by the user (paste mode). Do not infer the contents of Files, Connections' upstream systems, or Runs you didn't pull. The run set, the topology, and the AOPs are the source of truth.
 
 ## Final check before returning
 
@@ -227,7 +225,7 @@ Use Duvo's nouns when describing the workflow and the fix. Never substitute — 
 
 - `run-debugger` — for one failed Run: it reads the transcript and the Build that ran it. This skill audits the whole workflow; hand it a representative Run when a pattern needs transcript-level depth.
 - `aop-writer` — once you've named an AOP-level fix, hand off the in-effect AOP and the change request; this skill never rewrites AOPs itself.
-- `duvo-cli` — the terminal surface for every read here (`duvo runs list`, `duvo queues agents`, `duvo revisions get`); useful when the user is auditing from a shell.
+- `duvo-cli` — command references for a session configured to use the CLI, or a user auditing from a shell.
 
 ## Resources
 

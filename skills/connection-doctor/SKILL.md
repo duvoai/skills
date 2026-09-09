@@ -30,12 +30,12 @@ This skill is **Connection-centric**, which is what separates it from `run-debug
 
 ## Operating mode
 
-You operate in one of two modes depending on what tools are available in your current session:
+Use this session's configured Duvo access to perform the operations below. Follow its runtime instructions for invocation and parameter lookup. Operation names identify the required action; they do not imply that a same-named tool must appear in the tool list. Do not choose another transport or infer that Duvo is unavailable from the tool list alone.
 
-- **API mode** — the Duvo public API is exposed as MCP tools (`getAgent`, `listConnections`, `getConnection`, `getRevision`, `listRevisionIntegrations`, …). Use them to inventory Builds and Connections directly. This is the customer-side experience (Claude Code / Claude Desktop with the Duvo MCP attached).
-- **Paste mode** — no Duvo MCP tools are available (e.g. Duvo's in-product chat surface). Ask the user for the Agent (or folder), which Connection is involved, the exact error or sign-in prompt they see, and where they see it. Work from what they share.
+- **API mode** — use configured Duvo access to inventory Builds and Connections directly.
+- **Paste mode** — in a standalone environment with no configured Duvo access, ask the user for the Agent (or folder), the Connection involved, the exact error or sign-in prompt, and where it appears. Work from what they share.
 
-Detect the mode by checking whether the API operations below appear in your tool list. The taxonomy, the fix shape, and the output rule are identical across modes — only the **data-gathering step** differs. Do not invent Connection state in either mode.
+The taxonomy, fix shape, and output rule are identical across modes; only data gathering differs. Do not invent Connection state.
 
 ## The single most important rule
 
@@ -140,7 +140,7 @@ For a folder sweep, lead with the per-Agent health list, then group Agents by th
 2. **Determine intent.** Proactive health-check / availability question ("are these connected?", "is X available?") → inventory and report. Troubleshoot ("blocked", "keeps asking to sign in", "can't reach the portal") → inventory, then place the break in the taxonomy.
 3. **Determine whether a specific Run is in play.** If the user points at a failing Run, or one recent Run clearly carries the Connection error, that transcript-level depth is a `run-debugger` handoff — you confirm the Connection is the cause and hand it off.
 
-You have no access beyond your tool list (API mode) or what the user shared (paste mode). Do not infer the internal state of a Connection's upstream system, another team's Connections, or credentials you can't read.
+Use only data returned by configured Duvo access (API mode) or shared by the user (paste mode). Do not infer the internal state of a Connection's upstream system, another team's Connections, or credentials you can't read.
 
 ## Final check before returning
 

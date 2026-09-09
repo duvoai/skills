@@ -9,11 +9,11 @@ description: >
   hand-crafting `curl` calls.
 license: MIT
 compatibility: >
-  Requires the duvo CLI (npm install -g @duvoai/cli) on PATH and an
-  authenticated session (duvo login).
+  Requires an installed, authenticated duvo CLI. Managed sessions follow
+  their host runtime instructions; standalone setup is documented below.
 metadata:
   author: duvoai
-  version: "1.10.0"
+  version: "1.11.0"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -33,7 +33,16 @@ ask for a shell snippet, a cron job, a CI step, or "how do I do X
 without opening the browser?". Both surfaces talk to the same public
 API — there is no functional gap to bridge by reaching for `curl`.
 
-## Install
+## Managed sessions and manual setup
+
+In a managed session, the host runtime instructions govern transport, setup,
+reference lookup, and scope. Follow them before this standalone guide. When
+the host says the CLI is installed and configured, do not probe installation,
+log in, inspect credentials, change profiles, or switch transport. Read the
+references it names before commands. The installation, authentication, and
+profile-management steps below are for manual standalone setup only.
+
+## Install (manual setup)
 
 ```bash
 npm install -g @duvoai/cli
@@ -43,7 +52,7 @@ duvo --version
 Requires Node.js ≥ 22.22.0. `npx @duvoai/cli <cmd>` also works without
 a global install.
 
-## Authentication
+## Authentication (manual setup)
 
 `duvo` keeps credentials as **named profiles** on disk. One profile per
 (team, environment). The first profile added becomes the default; from
@@ -78,7 +87,9 @@ duvo --profile acme whoami       # one-off override for a single command
 
 ## Reading the help
 
-Every command supports `--help`. Reach for it first instead of guessing:
+Read `references/commands.md` for command syntax. Every command also supports
+`--help`; in managed sessions, use it only when the host runtime permits it.
+For standalone use, these help commands describe the installed binary:
 
 ```bash
 duvo --help                      # global help, lists every top-level group
@@ -86,10 +97,9 @@ duvo agents --help               # subcommand group
 duvo agents create --help        # exact flags for one command
 ```
 
-The CLI's help text is the source of truth — if a flag doesn't appear
-there, it doesn't exist in your installed version. Always show the
-user `duvo <command> --help` rather than copy-pasting flags from
-memory if you're unsure.
+If the binary rejects a documented flag, its help describes the installed
+version. Do not guess flags or treat standalone help examples as instructions
+to probe a managed session.
 
 ## Output modes
 
@@ -104,10 +114,10 @@ Each command picks a default output shape based on what it returns:
   between versions, JSON is safe to pipe into `jq` or `yq`.
 
 ```bash
-duvo agents list --json | jq '.agents[].id'
+duvo agents list --team <target-team-id> --json | jq '.agents[].id'
 ```
 
-For scripting, always pass `--json` and parse the response. Don't
+For scripting, pass `--json` wherever the command reference lists it and parse the response. Don't
 parse the table output — column widths and truncation thresholds are
 not part of the public contract. Envelope keys differ across
 endpoints — `agents list` returns `.agents[]`, `queues list` returns
@@ -179,9 +189,15 @@ the CLI rather than restating per-command:
 - `--profile <name>` is a **global** flag that overrides the default
   profile for that single invocation.
 - `--team <id>` is a **global** flag that overrides the resolved team
-  for that single invocation. OAuth and user-scoped API-key profiles can
-  select an accessible team; team-scoped API-key profiles reject a different
-  team.
+  for commands that use request-team scope. In managed sessions, always
+  pass the target team explicitly for those commands, even when it matches
+  the configured default. Follow the host instructions to choose the target.
+  Resource-ID commands may ignore this flag; raw API paths are not rewritten.
+  Command-local ownership flags (including landscape `propose-process --team`)
+  assign an owner and must not receive a default team mechanically. Organization
+  commands use `--org` or a positional organization ID as documented. OAuth
+  and user-scoped API-key profiles can select an accessible team; team-scoped
+  API-key profiles reject a different team.
 - `--json` is available on nearly every command that hits the API and is
   the shape to use in scripts. Use it only when the command's help or command
   reference lists it; never invent an unsupported flag or parse table output.
@@ -216,7 +232,7 @@ the CLI rather than restating per-command:
 - IDs are printed bare (no quotes) so they copy cleanly into shell
   pipelines and `$()` substitutions:
   ```bash
-  agent=$(duvo agents create --name "Ops bot" --input "What to do" --json | jq -r .agent.id)
+  agent=$(duvo agents create --team <target-team-id> --name "Ops bot" --input "What to do" --json | jq -r .agent.id)
   duvo runs start --agent "$agent"
   ```
 - Deprecation warnings print to **stderr** (so they don't corrupt
@@ -255,7 +271,7 @@ the CLI rather than restating per-command:
   use the slot once one of the user's connections is **pinned** to it —
   an attached slot with no pinned connection fails at runtime with "not
   connected", and nothing warns you at attach time. Find the connection
-  with `duvo connections list --type <slug>`, pin it with
+  with `duvo connections list --team <target-team-id> --type <slug>`, pin it with
   `duvo revision-integrations connections pin`, and verify with
   `duvo revision-integrations connections list` (expect ≥ 1 entry per
   slot). Default integrations (browser, Exa, human-in-the-loop,
@@ -274,7 +290,8 @@ the CLI rather than restating per-command:
 - **Multi-team OAuth and user-scoped API-key profiles.** An OAuth login,
   or an API key not pinned to a single team by the server (a _user-scoped_
   key), can act on several teams. Use `duvo teams list` to see all teams,
-  then `duvo team use <id>` to set the default, or `--team <id>` per-command
+  then pass `--team <id>` on request-scoped commands. In manual setup,
+  `duvo team use <id>` can set the profile default
   — both work for these profiles. A _team-scoped_ API key is the one
   exception: the server already pins it to one team, so it cannot target a
   different team via `--team`.
@@ -352,8 +369,8 @@ Steer users to a different surface in these cases:
   worked examples of `-f` vs `-F`, `@file` typed fields, and
   `--input` for raw JSON bodies.
 
-When in doubt, run `duvo <command> --help` — the installed binary is
-the final source of truth.
+Read the relevant command reference before acting; managed sessions follow
+the host runtime instructions for any help fallback.
 
 ## See also
 

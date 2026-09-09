@@ -3,21 +3,36 @@
 Full command tree for `duvo` (`@duvoai/cli`) as of the most recent
 published version. Cross-reference against `duvo <command> --help` from
 the installed binary if a flag here doesn't match — the binary is
-authoritative.
+authoritative. In managed sessions, follow the host runtime instructions for
+setup and help fallback; these command listings do not authorize probes or login.
 
 Global flags available everywhere:
 
 - `--profile <name>` — override the default profile for this invocation.
-- `--team <id>` — override the active team for this invocation (also settable via `DUVO_TEAM_ID`; OAuth and user-scoped API-key profiles can select an accessible team, while team-scoped API-key profiles reject a different team).
+- `--team <id>` — override request-team scope on commands that use it (also settable via `DUVO_TEAM_ID`; OAuth and user-scoped API-key profiles can select an accessible team, while team-scoped API-key profiles reject a different team).
 - `--version` — print the installed CLI version.
 - `--help` — print help for any command.
 
 Commands below list `--json` when they support raw JSON output. If it is not
-listed, do not pass it. The installed command's `--help` is authoritative.
+listed, do not pass it. If a documented flag is rejected, the installed
+command's `--help` is authoritative, subject to the host runtime instructions.
+
+In managed sessions, always supply `--team <target-team-id>` on request-scoped
+commands such as `agents list`, `agents create`, `runs list`, `queues list`, and
+`connections list`, even for the configured default. Choose the explicit user
+target first, the page team when the request concerns that page second, and
+the chat team otherwise; navigation alone does not retarget ongoing work.
+Clarify ambiguous scope and confirm cross-team writes before acting. Resource-ID
+commands such as `agents get`, `revisions get`, and `cases list --queue` use
+resource IDs and may ignore global `--team`. It is not an authorization check.
+Raw `duvo api` paths keep their own scope; the flag does not rewrite them.
+Supply the documented organization argument (`--org` or a positional ID) for
+organization operations. Ownership flags such as landscape `--team` assign
+ownership; never append a page or chat default mechanically.
 
 Confirmation flag for destructive commands: `-y` / `--yes` skips the
 TTY prompt. In a non-TTY context the prompt is replaced by a refusal —
-pass `-y` explicitly.
+pass `-y` explicitly after obtaining the required confirmation.
 
 ## Authentication & profiles
 
@@ -136,7 +151,14 @@ check with `workspaces` first.
 | `duvo revisions update <revision-id> --config-file <path\|-> [--handover-to <step-id\|none>] [--json]`        | Update a revision's config (handover targets are derived from the AOP by default). `--handover-to` sets the successor explicitly (`none` clears it); mutually exclusive with @-mention handovers in the config's instructions. |
 | `duvo revisions promote <id> [--name <text>] [--description <text>] [--json]`                                 | Promote a draft or historic revision to live. `--name` sets the promoted revision's display name (1-80 chars).                                                                                                                 |
 
-### Revision integrations
+#For an explicit `createRevision` handover-target list, use
+`duvo api POST /v2/agents/<agent-id>/revisions --input revision.json --json`.
+The body contains `name`, `config`, and `handover_target_ids` (Agent IDs matching
+the serialized AOP mentions). `revisions create` has no target-list flag;
+`--handover-to` sets a single successor and is not the @-mention target list.
+`revisions update` derives its `handoverTargetIds` from the config's AOP mentions.
+
+## Revision integrations
 
 `duvo revision-integrations …` manages the integration slots on a
 revision and the connections pinned to each slot.
@@ -526,7 +548,8 @@ landscape (hierarchical tree of area nodes and process nodes). Org-path
 subcommands require `--org <org-id>` or the `DUVO_ORG_ID` environment
 variable, and an OAuth profile with an org-level role (API-key profiles have
 no org visibility). Suggestion commands resolve their organization from the
-node and do not take `--org`.
+node and do not take `--org`. Managed sessions pass `--org` explicitly on
+org-path commands instead of relying on environment defaults.
 
 **Read commands:**
 
@@ -579,6 +602,29 @@ that team; organization-wide targets still require an Organization Admin.
 | `duvo clarity landscape suggestions accept-capture <node-id> <suggestion-id> [--json]`                                                                                                                 | Accept a pending capture suggestion and create its capture request.                                                                                                                          |
 | `duvo clarity landscape suggestions dismiss-capture <node-id> <suggestion-id> [--json]`                                                                                                                | Dismiss a pending capture suggestion.                                                                                                                                                        |
 | `duvo clarity landscape suggestions assign-capture <node-id> <request-id> (--user <user-id>\|--unassign) [--json]`                                                                                     | Assign or unassign an open capture request.                                                                                                                                                  |
+
+`create-area` in active mode needs the requested owning team (`--team` or,
+in manual setup, `DUVO_TEAM_ID`); `--creation-mode proposal` does not require
+one. On `propose-process`, `--team` assigns ownership rather than request
+scope: default `auto` materialization can create a real process when it is
+supplied. For a candidate process, use `--materialization-mode proposal`, even
+when recording a proposed owning team.
+
+`set-priorities --input <file|->` accepts a JSON array of
+`{ "nodeId": "…", "priority": "high" | "medium" | "low" | null, "reasoning": "…" }`.
+A null priority clears priority, reasoning, and assessment timestamp. Use
+`--input` or repeatable `--set` / `--clear`, not both, and submit at most 200
+unique nodes per call:
+
+```bash
+duvo clarity landscape set-priorities --org <org-id> --input priorities.json --json
+duvo clarity landscape set-priorities --org <org-id> \
+  --set '<node-id>=high:Runs hundreds of times a month and is fully manual' \
+  --clear <other-node-id> --json
+```
+
+`batch-people --input <file|->` takes the public API request body as JSON;
+`--input -` reads stdin. Inspect the per-pair outcomes for partial failures.
 
 ### Clarity process links
 
