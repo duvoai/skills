@@ -553,15 +553,26 @@ org-path commands instead of relying on environment defaults.
 
 **Read commands:**
 
-| Command                                                                                                                | Purpose                                                                                                                       |
-| ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `duvo clarity landscape get [--org <org-id>] [--root <node-id>] [--json]`                                              | Read the full process landscape (or a subtree). Default subcommand.                                                           |
-| `duvo clarity landscape tree [--org <org-id>] [--root <node-id>] [--json]`                                             | Read the raw process tree (depth-first flat list with depth field).                                                           |
-| `duvo clarity landscape search <query> [--org <org-id>] [--root <node-id>] [--json]`                                   | Filter landscape nodes by name, owner, process name, or id.                                                                   |
-| `duvo clarity landscape node <node-id> [--org <org-id>] [--root <node-id>] [--json]`                                   | Read one landscape node by ID. `--root` limits the search to the subtree under that node.                                     |
-| `duvo clarity landscape people [--org <org-id>] [--root <node-id>] [--json]`                                           | Read the people on every process in the landscape in one request.                                                             |
-| `duvo clarity landscape node-people <node-id> [--org <org-id>] [--json]`                                               | List the people involved in one process.                                                                                      |
-| `duvo clarity landscape captures [--org <org-id>] [--limit <n>] [--include-transcripts] [--include-excluded] [--json]` | List Clarity captures eligible for the process landscape. Excluded captures are hidden unless `--include-excluded` is passed. |
+| Command                                                                                                                                    | Purpose                                                                                                                       |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `duvo clarity landscape get [--org <org-id>] [--root <node-id>] [--json]`                                                                  | Read the full process landscape (or a subtree). Default subcommand.                                                           |
+| `duvo clarity landscape tree [--org <org-id>] [--root <node-id>] [--owner-team <team-id>] [--json]`                                        | Read the raw process tree (depth-first flat list with depth field).                                                           |
+| `duvo clarity landscape search <query> [--org <org-id>] [--root <node-id>] [--json]`                                                       | Filter landscape nodes by name, owner, process name, or id.                                                                   |
+| `duvo clarity landscape node <node-id> [--org <org-id>] [--root <node-id>] [--json]`                                                       | Read one landscape node by ID. `--root` limits the search to the subtree under that node.                                     |
+| `duvo clarity landscape people [--org <org-id>] [--root <node-id>] [--owner-team <team-id>] [--user <user-id>] [--search <text>] [--json]` | Read the people on every process in the landscape in one request.                                                             |
+| `duvo clarity landscape node-people <node-id> [--org <org-id>] [--json]`                                                                   | List the people involved in one process.                                                                                      |
+| `duvo clarity landscape captures [--org <org-id>] [--limit <n>] [--include-transcripts] [--include-excluded] [--json]`                     | List Clarity captures eligible for the process landscape. Excluded captures are hidden unless `--include-excluded` is passed. |
+
+An organization-wide `tree` or `people` read is large — on a big organization it
+can exceed the response limits of the agent surfaces that call it. Narrow it
+server-side: `--root` reads one subtree, `--owner-team` one team's processes,
+and on `people`, `--user` or `--search` one person (`--search` matches the
+person's name or email). To see which of a person's processes still owe a
+capture, filter `people` to them and read `captureCount` on each row.
+
+These reads are capped, filtered or not. `truncated: true` means a cap was hit
+and the rows are a lower bound — say the view is partial rather than reporting a
+count from it.
 
 `get`, `tree`, `node`, and `search` return `priority`
 (`high` / `medium` / `low`, or `null` when the node has not been assessed),
