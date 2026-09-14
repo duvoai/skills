@@ -158,6 +158,33 @@ the serialized AOP mentions). `revisions create` has no target-list flag;
 `--handover-to` sets a single successor and is not the @-mention target list.
 `revisions update` derives its `handoverTargetIds` from the config's AOP mentions.
 
+### AI-assisted revision generation
+
+Generate draft changes, inspect the returned build and checkpoint, then explicitly
+keep or discard the reviewed attempt. Neither decision activates a build.
+
+```bash
+duvo revisions generate <build-id> --prompt <text> [--automation-revision <id>] [--context-run <id>] [--process <id>] [--json]
+duvo revisions generation-status <builder-run-id> [--json]
+duvo revisions generation-resume <builder-run-id> --answers-file <path|-> [--json]
+duvo revisions generation-cancel <builder-run-id> [--yes] [--json]
+duvo revisions generation-accept <build-id> --builder-run <id> --started-at <timestamp|null> [--yes] [--json]
+duvo revisions generation-decline <build-id> --builder-run <id> --started-at <timestamp|null> [--yes] [--json]
+```
+
+Generate returns `{generation:{status:"generating",builder_run_id,build_id}}`;
+retain both returned IDs because the target may be a new draft. Status, cancel,
+accept and decline return `{builder_run:…}`; resume returns `{success:true}`.
+Status does one poll, shows pending questions and warnings, and exits nonzero
+for failed/cancelled work even with `--json`. Answer a waiting-for-input run
+with a JSON object mapping question IDs to the user's answers. Review the
+saved build against `checkpoint_config` before acceptance; the checkpoint is
+the previous config. Pass that attempt's observed `started_at`, not a freshly
+fetched replacement: a reused run ID alone does not identify the reviewed
+change. A conflict requires a fresh review. Both acceptance and decline can
+return `completed`; remember the chosen decision and read back the build before
+claiming anything was applied. Cancellation does not guarantee rollback.
+
 ## Revision integrations
 
 `duvo revision-integrations …` manages the integration slots on a
