@@ -140,12 +140,13 @@ Avoid: "review your AOP", "tighten the logic", "consider escalating earlier". Va
 
 ## Handoff to `aop-writer`
 
-If the fix is in the AOP, **stop short of rewriting it in this skill.** Hand off to `aop-writer` with two things:
+If the fix is in the AOP, **stop short of rewriting it in this skill.** Hand off to `aop-writer` with three things:
 
-1. The exact AOP that was in effect (from `getRevision`).
+1. The Build that was in effect (its id, from `getRevision`), so it works from that exact AOP. Pass the id, not the AOP text.
 2. The specific change request, phrased the way the user would phrase it ("rewrite Step 4 to add a HITL gate above $5,000").
+3. The AOP file to work in (`aops/<agent-id>.md`), so the AOP is edited in place rather than retyped.
 
-`aop-writer` returns the rewritten AOP. You do not.
+`aop-writer` writes the fix: it leaves the rewritten AOP in that file and returns the changed passages. You do not.
 
 This split is intentional. `run-debugger` finds the bug. `aop-writer` writes the fix. Mixing the two produces shallow rewrites and unanchored diagnoses.
 

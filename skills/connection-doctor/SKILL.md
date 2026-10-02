@@ -109,7 +109,7 @@ Avoid: "check your connections", "the auth is broken", "try reconnecting". Vague
 ## Handoffs
 
 - **`run-debugger`** — when the answer needs a single failing Run's transcript (the exact tool call, the exact error line). You establish _that_ the Connection is the problem; `run-debugger` reads the Run to show precisely where. Hand it the Run id and the Connection involved.
-- **`aop-writer`** — when the fix is to change how the AOP references a Connection (e.g. add a fallback branch when a Connection is unavailable, or narrow a step to the credential's real scope). Hand it the in-effect AOP and the change request; you never rewrite the AOP inline.
+- **`aop-writer`** — when the fix is to change how the AOP references a Connection (e.g. add a fallback branch when a Connection is unavailable, or narrow a step to the credential's real scope). Hand it the in-effect Build, the AOP file to edit (`aops/<agent-id>.md`) and the change request; you never rewrite the AOP inline.
 - **The user** — for anything that requires a human at a browser: an OAuth consent screen, a new region- or account-scoped credential, or completing MFA / authenticator enrollment. Set up what you can (stage the new Build) and hand them the rest.
 
 ## Anti-patterns — reject

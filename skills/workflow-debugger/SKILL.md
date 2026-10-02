@@ -156,12 +156,13 @@ Avoid: "tighten the AOP", "improve quality", "consider batching". A recommendati
 
 ## Handoff to `aop-writer`
 
-When a recommendation is an AOP change, **stop short of rewriting the AOP here.** Hand off to `aop-writer` with two things:
+When a recommendation is an AOP change, **stop short of rewriting the AOP here.** Hand off to `aop-writer` with three things:
 
-1. The exact AOP that was in effect (from `getRevision` on the `build_id` the Runs ran).
+1. The Build that was in effect (the `build_id` the Runs ran), so it works from that exact AOP. Pass the id, not the AOP text.
 2. The specific change request, phrased the way the user would ("rewrite Step 5 to require the PO number in the supplier reply").
+3. The AOP file to work in (`aops/<agent-id>.md`), so the AOP is edited in place rather than retyped.
 
-`aop-writer` returns the rewritten AOP. You do not. This split is deliberate: `workflow-debugger` finds the systemic issue; `aop-writer` writes the fix. Mixing the two produces shallow rewrites and unanchored audits.
+`aop-writer` writes the fix: it leaves the rewritten AOP in that file and returns the changed passages. You do not. This split is deliberate: `workflow-debugger` finds the systemic issue; `aop-writer` writes the fix. Mixing the two produces shallow rewrites and unanchored audits.
 
 ## Anti-patterns — reject
 

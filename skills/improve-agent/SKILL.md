@@ -34,7 +34,7 @@ So the value you add over running `workflow-debugger` directly is the loop aroun
 
 - **`workflow-debugger`** — the read-only audit of an Agent across many Runs (status mix, eval scores, recurring complaints, the AOP the Runs ran). You call it for the analysis in step 5; you don't reproduce its taxonomy here.
 - **`run-debugger`** — transcript-level diagnosis of one Run. Reach for it when a recurring failure needs depth on a representative Run.
-- **`aop-writer`** — rewrites an AOP from the in-effect AOP plus a change request. Every AOP change you apply goes through it; you never rewrite an AOP inline.
+- **`aop-writer`** — rewrites an AOP from the in-effect Build plus a change request, editing it in an AOP file (`aops/<agent-id>.md`) and returning the changed passages. Every AOP change you apply goes through it; you never rewrite an AOP inline.
 
 If the user wants a queue-connected producer→consumer workflow improved rather than one Agent, that's the `improve-queue` skill.
 
@@ -96,7 +96,7 @@ Present them. Don't apply anything yet — the user chooses what lands.
 
 Ask whether to apply all, some, or refine further. On approval, land each accepted change with your tools, always confirming before anything irreversible or production-changing:
 
-- **AOP changes → `aop-writer`.** Invoke it with the in-effect AOP and the change request phrased as the user would. Present the rewrite; on accept, save it as a **new Build** created _from the Build you surveyed_ — pass that audited `build_id` as `source_build_id` on the new revision. Skip it and the revision copies Connections, logins, credentials, and queue links from the current **live** Build by default, which may not be the historical Build the Runs actually ran. If the in-effect AOP carries `<DUVO:AGENT id="…">` handovers, also pass those target Agent IDs as `handover_target_ids` — a new revision only gets its handover bindings when they're passed, so a rewrite that keeps the handover text but drops the IDs will fail on the handover branch once promoted. Promoting that Build to what runs in production is the heavier step — confirm before promoting.
+- **AOP changes → `aop-writer`.** Invoke it with the Build you surveyed, the AOP file (`aops/<agent-id>.md`) and the change request phrased as the user would. Present the changed passages it returns; on accept, save the file as a **new Build** created _from the Build you surveyed_ — pass that audited `build_id` as `source_build_id` on the new revision (with the CLI, `--source-revision <build_id> --aop-file <file>`), never retyping the AOP. Skip it and the revision copies Connections, logins, credentials, and queue links from the current **live** Build by default, which may not be the historical Build the Runs actually ran. If the in-effect AOP carries `<DUVO:AGENT id="…">` handovers, keep those tags intact: the new revision binds its handover targets from the tags in the saved AOP, so a rewrite that drops or alters a tag drops that handover. Promoting that Build to what runs in production is the heavier step — confirm before promoting.
 - **Config changes → your tools.** Tune a trigger (`updateAgentCaseTrigger`, `upsertAgentTrigger`), attach a Connection or Skill on a new revision, adjust the Agent (`updateAgent`) or a schedule. Confirm first for anything that starts production work.
 - **Memory.** If a fix belongs in a memory file, you can't write it — tell the user exactly what to add and where.
 

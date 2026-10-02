@@ -37,7 +37,7 @@ The value you add over running `workflow-debugger` directly is the loop around i
 
 - **`workflow-debugger`** — the read-only audit of a Queue workflow: topology and `problems`, the backlog, both producer and consumer AOPs, and a sample of Runs. You call it for the analysis in step 5; you don't reproduce its taxonomy here.
 - **`run-debugger`** — transcript-level diagnosis of one Run. Reach for it when a recurring failure (a case that won't close, a wrong branch) needs depth on a representative Run.
-- **`aop-writer`** — rewrites an AOP from the in-effect AOP plus a change request. Every AOP change you apply — producer or consumer — goes through it; you never rewrite an AOP inline.
+- **`aop-writer`** — rewrites an AOP from the in-effect Build plus a change request, editing it in an AOP file (`aops/<agent-id>.md`) and returning the changed passages. Every AOP change you apply — producer or consumer — goes through it; you never rewrite an AOP inline.
 
 If the user wants one standalone Agent improved rather than a Queue-connected workflow, that's the `improve-agent` skill.
 
@@ -96,7 +96,7 @@ Present them. Don't apply anything yet.
 
 Ask whether to apply all, some, or refine. On approval, land each accepted change with your tools, always confirming before anything irreversible or production-changing:
 
-- **AOP changes → `aop-writer`**, one Agent at a time. Invoke it with that Agent's in-effect AOP and the change request; present the rewrite; on accept, save it as a **new Build** created _from the Build you surveyed_ — pass that audited `build_id` as `source_build_id`, or the revision copies Connections, logins, credentials, and queue links from the current **live** Build by default. Handovers matter doubly here: if the AOP carries `<DUVO:AGENT id="…">` tags (the producer→consumer seam), pass those target Agent IDs as `handover_target_ids` on save, or the rewritten Build keeps the handover text but loses the binding and breaks the seam once promoted. Confirm before promoting a Build to production.
+- **AOP changes → `aop-writer`**, one Agent at a time. Invoke it with the Build you surveyed, that Agent's AOP file (`aops/<agent-id>.md`) and the change request; present the changed passages it returns; on accept, save the file as a **new Build** created _from the Build you surveyed_ — pass that audited `build_id` as `source_build_id` (with the CLI, `--source-revision <build_id> --aop-file <file>`), or the revision copies Connections, logins, credentials, and queue links from the current **live** Build by default. Handovers matter doubly here: if the AOP carries `<DUVO:AGENT id="…">` tags (the producer→consumer seam), keep those tags intact: the new revision binds its handover targets from the tags in the saved AOP, so a rewrite that drops or alters a tag breaks the seam once promoted. Confirm before promoting a Build to production.
 - **Topology and trigger changes → your tools.** Tune or split a trigger (`updateAgentCaseTrigger`, `upsertAgentTrigger`), adjust an Agent (`updateAgent`), or re-bind the Queue. Confirm before enabling any trigger that starts production work.
 - **Backlog actions.** Reprocessing or bulk-updating cases (`bulkReprocessCases`, `bulkUpdateCaseStatus`) is high-volume and hard to undo — state exactly what you'll touch and how many, and act only on an explicit yes.
 

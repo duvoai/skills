@@ -351,7 +351,8 @@ Steer users to a different surface in these cases:
   or open the run in the web UI.
 - **They want to edit an AOP or agent configuration interactively.**
   `revisions create` and `revisions update` accept a config file, but
-  composing the config by hand is painful. Direct them to the
+  composing the config by hand is painful. To change only the AOP, pass a
+  markdown file with `--aop-file` instead. Direct them to the
   Agent editor in the web UI for anything beyond a small targeted
   patch.
 - **They want to run an agent in their own process rather than on

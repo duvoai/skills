@@ -133,7 +133,7 @@ See `references/aop-examples.md` for canonical worked examples to calibrate agai
 
 - `run-debugger` — when a Run ran with an AOP and failed, start there to diagnose the root cause; it will hand off to this skill if the fix is an AOP rewrite.
 - `workflow-debugger` — audits an Agent across many Runs; hands off here when a systemic fix is an AOP change.
-- `duvo-cli` — once the AOP is finalized, `duvo revisions create` / `duvo revisions update` ships it from the terminal.
+- `duvo-cli` — once the AOP is finalized, `duvo revisions create` / `duvo revisions update` with `--aop-file` ships it from a markdown file.
 
 ## Resources
 
