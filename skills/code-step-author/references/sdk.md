@@ -87,6 +87,38 @@ through `duvo.call_tool(...)`.
 Only Connections attached to the step resolve. Every Connection the program
 calls must be in the `mcpServers` you return.
 
+## Calls constrained to an expected HTTPS origin
+
+When the target account must be checked before a write, use the bound Connection's
+`call_on_origin(expected_origin, tool, **arguments)` rather than treating a Policy
+label or an endpoint string in a case as evidence.
+
+```python
+answer = duvo.connections.netsuite.call_on_origin(
+    "https://1234567-sb1.suitetalk.api.netsuite.com",
+    "ns_getRecord", recordType="vendor", recordId="42",
+)
+result = answer["result"]  # unchanged tool payload
+verification = answer["verification"]
+```
+
+The backend resolves the actual bound endpoint fresh for this call, refuses a
+different origin before dispatch, and constrains every transport request and
+redirect to that HTTPS origin. The constraint does not choose a Connection.
+`expected_origin` must contain only a canonical HTTPS scheme and host: no port,
+credentials, path, query or fragment (a trailing slash is normalized).
+
+The wrapper contains `result` and `verification`; verification names
+`expected_origin`, `server`, `tool`, the actual timeline `tool_call_id` UUID,
+the signed-token-bound `run_id`, and UTC `observed_at`. Use the guarded method
+for every later read and write that must remain on this account. Normal tool
+sugar and `call(...)` keep returning the bare tool payload.
+
+The guarded method uses a distinct relay route and never falls back to the
+legacy unguarded route. An old backend refuses it before dispatch. A missing
+or mismatched acknowledgement after a possible write is an unknown outcome:
+reconcile it read-only; never retry that write automatically.
+
 ## The dispatch input
 
 ```python
