@@ -13,7 +13,7 @@ compatibility: >
   their host runtime instructions; standalone setup is documented below.
 metadata:
   author: duvoai
-  version: "1.11.1"
+  version: "1.12.0"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -163,15 +163,15 @@ The top-level groups are:
 - **Agent folders** — `agent-folders …` (organize agents in a tree)
 - **Revisions** — `revisions …`, `revision-integrations …` (versioned configs)
 - **Runs** — `runs …` (start, get, message, stop, respond to HITL, evaluation)
-- **Queues & cases** — `queues …`, `queues eval-rubrics …`, `queue-labels …`, `cases …`
+- **Queues & cases** — `queues …`, `queues eval-rubrics …`, `queues aggregations …` (Cube-style aggregations over typed Case data), `queue-labels …`, `cases …`, `cases search`
 - **Notifications** — `notifications …` (list, get, feed, get-batch, counts, unread-count, mark-read, mark-batch-read, mark-all-read, dismiss, delete-read, delete-all)
 - **Files & sandboxes** — `files …`, `sandboxes …`
 - **Connections & integrations** — `integrations …`, `connections …`, `oauth …`
 - **Secrets & credentials** — `secrets …` (env-var secrets), `credentials …` (browser logins), `revision-secrets …`, `revision-logins …`
 - **Clarity** — `clarity …` (process search, versions, captures, gaps, evidence, facets, export, generation, promotion, artifact imports, invite links, doctor, process landscape, process links, process tags, process summaries)
-- **Pulse** — `pulse …` (create, get, list, send message, attach files, refresh, stop, rename, share, duplicate, move to another team, pdf/snapshot export, version history, restore, messages, answer HITL, connections, comment threads, delete Pulse dashboards)
+- **Pulse** — `pulse …` (create, get, list, send message, attach files, refresh, stop, rename, share, duplicate, move to another team, pdf/snapshot export, version history, restore, messages, answer HITL, connections, comment threads, delete Pulse dashboards, `pulse data …` to connect/disconnect queue data sources)
 - **Skills & plugins** — `skills …`, `plugins …`
-- **Team** — `team current`, `team get`, `team members`, `team set-role`, `team remove-member`, `team leave`, `team use`, `teams list`, `teams org`, `teams orgs`, `teams create-org-team`, `teams create-workspace`, `teams org-insights`, `teams org-metrics`, `teams org-usage`
+- **Team** — `team current`, `team get`, `team members`, `team set-role`, `team remove-member`, `team leave`, `team use`, `teams list`, `teams org`, `teams orgs`, `teams create-org-team`, `teams create-workspace`, `teams org-agents`, `teams org-insights`, `teams org-metrics`, `teams org-runs`, `teams org-usage`
 - **Invitations** — `invite list`, `invite create`, `invite bulk`, `invite update`, `invite resend`, `invite delete`, `invite org-member`, `invite link get|create|delete`
 - **Bundled guides** — `guide …` (version-matched CLI guides for AI agents)
 - **Self-update** — `update` (update the installed CLI to the latest version)
@@ -217,6 +217,7 @@ the CLI rather than restating per-command:
   `duvo agents eval-rubrics remove`, `duvo agents eval-rubrics replace`,
   `duvo queues eval-rubrics remove`, `duvo queues eval-rubrics replace`,
   `duvo connections delete`, `duvo queue-labels delete`,
+  `duvo queues aggregations delete`,
   `duvo integrations custom delete`, `duvo clarity process-labels delete`,
   `duvo suggestions reject`, `duvo files delete`,
   `duvo pulse delete`, `duvo pulse move`,
