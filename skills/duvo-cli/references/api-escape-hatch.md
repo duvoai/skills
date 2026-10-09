@@ -1,8 +1,10 @@
 # `duvo api` — Low-level escape hatch
 
 `duvo api <METHOD> <path>` makes an authenticated request to any
-endpoint in the Duvo public API. Modelled on `gh api` — same flag
-shapes, same parsing rules. Use it when:
+endpoint in the Duvo public API. It borrows `gh api`'s **flag roles** —
+`-f` for a string field, `-F` for a typed one — but not its parsing
+rules; see "Where this differs from `gh api`" below before copying a
+`gh` invocation. Use it when:
 
 - A new endpoint shipped before a dedicated `duvo` command landed.
 - You need a body shape the high-level command doesn't expose.
@@ -27,10 +29,54 @@ duvo api <METHOD> <path>
   [--json]
 ```
 
+- **The long aliases are the reverse of `gh api`'s.** Here `--field`
+  is the string form and `--raw-field` the typed one; in `gh api` it is
+  `--raw-field` for strings and `--field` for typed values. Only the
+  short `-f` (string) / `-F` (typed) spellings match `gh` — prefer them,
+  and don't carry a `gh` habit over to the long names. These are `duvo
+api`'s own flags for building a request body; a high-level command's
+  `--field` is unrelated (on `duvo cases list` it is a case filter over
+  a typed queue's `json_data`).
 - `METHOD` is one of `GET`, `HEAD`, `POST`, `PUT`, `PATCH`, `DELETE`
   (case-insensitive — `get` works too).
-- `path` is a public API path starting with `/v1/…`. Don't include the
+- `path` is a public API path starting with `/v2/…`. Don't include the
   host; the CLI prepends `apiBaseUrl` from the active profile.
+- `duvo api` sends `path` through **verbatim** — unlike the high-level
+  commands, it does not resolve `--team` / `DUVO_TEAM_ID` / the profile
+  default for you, so spell out whatever the endpoint's own path is.
+  **Route shapes vary per resource; there is no rule to infer.** Some
+  collections are team-scoped (`/v2/teams/<team_id>/agents`) and others
+  are flat (`/v2/artifacts`, `/v2/sandboxes`); some by-ID routes are flat
+  (`/v2/agents/<id>`) and others stay team-scoped
+  (`/v2/teams/<team_id>/invites/<id>`). Take the exact path from
+  `GET /v2/documentation/json` — the raw OpenAPI document, since
+  `/v2/documentation` itself serves the Swagger UI HTML — or from the tool
+  matrix in
+  `duvo-cli/docs/mcp-cli-parity-audit.md` rather than guessing.
+
+## Where this differs from `gh api`
+
+The flag roles match; the parsing does not. Don't assume a working `gh api`
+command translates.
+
+- **`@file` is parsed as JSON, not read as text.** `-F key=@path.json`
+  inlines the file's **parsed JSON** at that key. `gh api` uses the file's
+  contents as the field value, so `-F body=@notes.txt` works there and
+  fails here with `File "notes.txt" is not valid JSON.` To send a file's
+  text as a string field, read it yourself (`-f body="$(cat notes.txt)"`).
+- **Decimals become numbers.** `-F` coerces anything matching
+  `-?\d+(\.\d+)?`, so `-F ratio=0.5` sends the number `0.5`. `gh api`
+  documents integer conversion only.
+- **There is no `key[sub]=` nesting.** Only a **trailing** `key[]` is
+  special-cased, and it builds an array — see "Array fields".
+- **`-F` falls back to a string.** A value that is not `null`, `true`,
+  `false`, a number or `@file` is sent as a plain string rather than
+  rejected, so a typo in a typed value fails at the API, not at the flag.
+- **`-F` wins over `-f` on a key collision, whatever the argument order.**
+  The two flags are collected into separate lists, so the interleaved
+  order you typed is gone by parse time. Don't set the same key twice.
+- **Mixing `key=` and `key[]=` for one key is an error**, in either order,
+  rather than silently overwriting.
 
 ## How fields become the request
 
@@ -71,10 +117,17 @@ parsed value at that key. It is the right way to send a nested object
 or an array as a single field value:
 
 ```bash
-# Send build={"name":"v2","enabled":true} as part of the JSON body.
-echo '{"name":"v2","enabled":true}' > build.json
-duvo api POST /v1/agents -f name="Ops bot" -F build=@build.json
+# Sends the file's parsed object as the `build` key of the JSON body.
+duvo api POST "/v2/teams/$TEAM_ID/agents" -f name="Ops bot" -F build=@build.json
 ```
+
+**There is no `key[sub]=` nesting syntax.** A key like
+`build[name]` is taken literally, so `-F "build[name]=v1"` sends
+`{"build[name]": "v1"}` — not `{"build": {"name": "v1"}}` — and a
+schema expecting the nested object rejects it. The only bracket the
+parser treats specially is a **trailing** `[]`, which builds an array
+(next section). For a nested object, use `-F key=@file.json` or send
+the whole body with `--input`.
 
 ## Array fields — `key[]`
 
@@ -83,7 +136,7 @@ base key. Repeat the flag once per element:
 
 ```bash
 # Builds {"queue_ids": ["<id-a>", "<id-b>"]}
-duvo api PUT /v1/agents/<id>/revisions/<rev>/integrations/<int>/queues \
+duvo api PUT "/v2/agents/$AGENT_ID/revisions/$REVISION_ID/integrations/$INTEGRATION_ID/queues" \
   -F "queue_ids[]=<id-a>" -F "queue_ids[]=<id-b>"
 ```
 
@@ -100,7 +153,7 @@ body with `--input -`:
 
 ```bash
 echo '{"queue_ids":["<id-a>","<id-b>"]}' \
-  | duvo api PUT /v1/agents/<id>/revisions/<rev>/integrations/<int>/queues --input -
+  | duvo api PUT "/v2/agents/$AGENT_ID/revisions/$REVISION_ID/integrations/$INTEGRATION_ID/queues" --input -
 ```
 
 ## `--input` — raw JSON body
@@ -109,8 +162,8 @@ When the request body doesn't decompose cleanly into key/value fields,
 hand `duvo api` the whole payload:
 
 ```bash
-duvo api POST /v1/agents --input ./agent.json
-cat ./agent.json | duvo api POST /v1/agents --input -
+duvo api POST "/v2/teams/$TEAM_ID/agents" --input ./agent.json
+cat ./agent.json | duvo api POST "/v2/teams/$TEAM_ID/agents" --input -
 ```
 
 `-` means stdin. `--input` is only valid for `POST` / `PUT` / `PATCH`
@@ -124,30 +177,32 @@ yourself (e.g. with `jq`) and pipe it via `--input -`.
 
 ```bash
 # 1. GET with query params.
-duvo api GET /v1/agents -F limit=20 -F offset=0
-duvo api GET /v1/runs -f status=running -F limit=50
+duvo api GET "/v2/teams/$TEAM_ID/agents" -F limit=20 -F offset=0
+duvo api GET "/v2/teams/$TEAM_ID/runs" -f status=running -F limit=50
 
-# 2. POST a flat body with mixed string + typed fields.
-duvo api POST /v1/agents \
+# 2. POST a nested object with `-F key=@file.json` (see "Nested fields").
+duvo api POST "/v2/teams/$TEAM_ID/agents" \
   -f name="Ops bot" \
-  -F build[name]="v1" \
-  -F build[enabled]=true
+  -F build=@build.json
 
-# 3. POST a nested body by loading JSON from a file.
-duvo api POST /v1/agents \
+# 2b. PATCH whose booleans must arrive typed, not as "true"/"false".
+duvo api PATCH "/v2/agents/$AGENT_ID" -F slack_enabled=true -F pinned=false
+
+# 3. Several nested objects at once.
+duvo api POST "/v2/teams/$TEAM_ID/agents" \
   -f name="Ops bot" \
   -F build=@build.json \
   -F integrations=@integrations.json
 
 # 4. POST a raw body verbatim.
-duvo api POST /v1/agents --input body.json
+duvo api POST "/v2/teams/$TEAM_ID/agents" --input body.json
 
 # 5. PATCH from a templated body via stdin.
 jq -n --arg name "New name" '{name: $name}' \
-  | duvo api PATCH /v1/agents/<id> --input -
+  | duvo api PATCH "/v2/agents/$AGENT_ID" --input -
 
 # 6. DELETE with a body (rare but supported).
-duvo api DELETE /v1/something -F reason=null
+duvo api DELETE /v2/something -F reason=null
 ```
 
 ## Output
@@ -157,7 +212,7 @@ the body for terminal readability; with `--json` it emits the JSON
 unmodified for scripting.
 
 ```bash
-duvo api GET /v1/agents --json | jq '.agents | length'
+duvo api GET "/v2/teams/$TEAM_ID/agents" --json | jq '.agents | length'
 ```
 
 Exit codes match the rest of the CLI:
@@ -169,13 +224,13 @@ Exit codes match the rest of the CLI:
 
 ## Common pitfalls
 
-- **Forgetting `-F` on numeric IDs.** `duvo api POST /v1/something -f
+- **Forgetting `-F` on numeric IDs.** `duvo api POST /v2/something -f
 limit=20` sends `"limit": "20"` (a string), which a strict schema
   may reject. Use `-F limit=20` for numbers.
 - **Mixing fields and `--input`.** They're mutually exclusive — pick
   one. If you need both, build the body upstream and use `--input`.
 - **Path prefixes.** `apiBaseUrl` is an origin (host + port, no
-  path). Always start `path` with `/v1/…`; don't embed it in the base
+  path). Always start `path` with `/v2/…`; don't embed it in the base
   URL.
 - **Query-string serialization of complex `-F` values.** For
   GET/HEAD, an `-F` value that parses to an object or array is

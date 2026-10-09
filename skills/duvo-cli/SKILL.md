@@ -13,7 +13,7 @@ compatibility: >
   their host runtime instructions; standalone setup is documented below.
 metadata:
   author: duvoai
-  version: "1.12.0"
+  version: "1.12.1"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -137,11 +137,20 @@ Any endpoint in the public API is reachable via `duvo api <METHOD>
 - You're debugging — `duvo api` shows exactly what the API returned,
   with no formatting in the way.
 
+`duvo api` passes the path through verbatim — it does not resolve
+`--team`/`DUVO_TEAM_ID`/the profile default the way the high-level commands
+do, so spell out whatever the endpoint's own path is. Route shapes vary
+per resource: some collections are team-scoped
+(`/v2/teams/<team_id>/agents`), others are flat (`/v2/artifacts`), and
+some by-ID routes stay team-scoped (`/v2/teams/<team_id>/invites/<id>`).
+Take the exact path from `GET /v2/documentation/json` (the raw OpenAPI
+document; `/v2/documentation` is the Swagger UI HTML), don't infer it.
+
 ```bash
-duvo api GET /v1/agents -F limit=20 -F offset=0
-duvo api POST /v1/agents -f name="Ops bot" -F build[name]="v1"
-duvo api POST /v1/agents --input body.json
-cat body.json | duvo api POST /v1/agents --input -
+duvo api GET "/v2/teams/$TEAM_ID/agents" -F limit=20 -F offset=0
+duvo api POST "/v2/teams/$TEAM_ID/agents" -f name="Ops bot" -F build=@build.json
+duvo api POST "/v2/teams/$TEAM_ID/agents" --input body.json
+cat body.json | duvo api POST "/v2/teams/$TEAM_ID/agents" --input -
 ```
 
 `-f` sends the value as a **string**; `-F` parses it as a typed value

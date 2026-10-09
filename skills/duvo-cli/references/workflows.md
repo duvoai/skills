@@ -465,19 +465,30 @@ artifact-import steps in one command.
 
 ## 10. Use `duvo api` for endpoints without a high-level command
 
+`duvo api` sends the path through verbatim — it does not resolve
+`--team`/`DUVO_TEAM_ID`/the profile default the way the high-level commands
+do, so spell out whatever the endpoint's own path is. Route shapes vary per
+resource, so take the exact path from `GET /v2/documentation/json` (the raw
+OpenAPI document; `/v2/documentation` serves the Swagger UI HTML):
+
 ```bash
 # Any GET with query params.
-duvo api GET /v1/agents -F limit=20 -F offset=0
+duvo api GET "/v2/teams/$TEAM_ID/agents" -F limit=20 -F offset=0
 
-# A POST with mixed string/typed fields.
-duvo api POST /v1/agents \
+# A POST with a nested object. `-F key=@file.json` inlines the file's
+# parsed JSON at that key — there is no `key[sub]=` nesting syntax.
+duvo api POST "/v2/teams/$TEAM_ID/agents" \
   -f name="Ops bot" \
-  -F build[name]="v1" \
-  -F build[enabled]=true
+  -F build=@build.json
+
+# A PATCH whose booleans must arrive typed, not as the strings "true"/"false".
+duvo api PATCH "/v2/agents/$AGENT_ID" \
+  -F slack_enabled=true \
+  -F pinned=false
 
 # A POST with a raw JSON body from a file or stdin.
-duvo api POST /v1/agents --input ./agent.json
-cat ./agent.json | duvo api POST /v1/agents --input -
+duvo api POST "/v2/teams/$TEAM_ID/agents" --input ./agent.json
+cat ./agent.json | duvo api POST "/v2/teams/$TEAM_ID/agents" --input -
 ```
 
 `duvo api` shares the same auth resolution, output pipeline, and exit
