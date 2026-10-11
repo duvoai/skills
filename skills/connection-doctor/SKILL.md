@@ -4,7 +4,8 @@ description: >
   Diagnose and health-check the Connections and credentials a Duvo Agent
   relies on. Use when the user asks whether a Connection is set up or
   available, why an Agent is blocked on authentication, what a Connection can
-  do, or wants a proactive check across an Agent or a folder of Agents. Reads
+  do, or wants a proactive check across an Agent or a folder of Agents. In Ask
+  Duvo, for an Automation, starts from getAutomationReadiness. Reads
   each Build's Connections and their live state via the Duvo public API, names
   the problem, and proposes one concrete fix — handing off to run-debugger when
   the evidence lives in a single failing Run.
@@ -63,6 +64,7 @@ If the user gives none of these and no error to anchor on, ask which Agent or Co
 
 These are the operations you call. Map them to user terms — never surface raw operation names to the user.
 
+- `getAutomationReadiness` — **Ask Duvo only; start here when the scope is an Automation.** One call returns, for the user asking, every Connection on the Automation's live Builds with no working account pinned (`missing`) or whose account needs reconnecting (`broken`), plus Logins and Secrets that are attached but gone, unlinked Queue slots, and the rest of what blocks a run, each with a `link` to fix it and `link_tab`, the tab that link opens: send each fix to its own item's link and call it by that name, and when you mention open Policy questions, give the Policy item's link. It reads the same bindings the run-start gate reads, so its Connection items are the authoritative answer to whether a Connection would stop a run on the live Builds. It is not a full readiness verdict for a user who can't see the Policy: then `ready` is null and the Policy was not checked. Use the reads below to explain a finding or to inspect a Build the Runs ran that is no longer live. Where it isn't available (the public API), start from `listRevisionIntegrations`.
 - `listAgents` / `getAgent` — resolve the Agent, or enumerate a folder's Agents for a sweep.
 - `listAgentRevisions` / `getRevision` — the Build history and the Build the Runs actually ran (use the `build_id` from recent Runs). The AOP and the attached Connections you care about are the ones on **that** Build, not necessarily the current one.
 - `listRevisionIntegrations` — the Connections / credentials attached to a given Build. This is the core read: a Connection the AOP uses that is **absent here** is the classic "never attached" break.
@@ -76,8 +78,8 @@ These are the operations you call. Map them to user terms — never surface raw 
 
 The steps are the same in either mode; only the data source changes.
 
-1. **Pin the scope.** One Agent, a folder, or one Connection. _API mode:_ confirm with `getAgent` / `listAgents`. _Paste mode:_ ask which Agent or Connection, and which system it signs in to.
-2. **Inventory the Connections in effect.** For each Agent in scope, read the Build the recent Runs ran (`getRevision(build_id)`, resolved via a small `listRuns` peek) and its attached Connections (`listRevisionIntegrations`). List what the AOP expects to reach versus what's actually attached.
+1. **Pin the scope.** One Automation, one Agent, a folder, or one Connection. When the scope is an Automation and `getAutomationReadiness` is available, call it before anything else, including `listAgents`. It names each Connection that would stop a run, by Agent; healthy Connections are never named, and the one `ok` Connections item appears only when nothing blocks. When you need the Agents and their live Builds, read them next with `getAutomationCurrent`. _API mode:_ otherwise confirm with `getAgent` / `listAgents`. _Paste mode:_ ask which Agent or Connection, and which system it signs in to.
+2. **Inventory the Connections in effect.** When the scope is an Automation and `getAutomationReadiness` is available, call it first: its Connection, Login and Secret items are what would stop a run on the live Builds. Healthy Connections are never named, and when some Connection blocks there is no `ok` item for the rest, so to name them read each live Build's `listRevisionIntegrations`. Then, for a Build the Runs ran that is no longer live, or to explain a finding: for each Agent in scope, read the Build the recent Runs ran (`getRevision(build_id)`, resolved via a small `listRuns` peek) and its attached Connections (`listRevisionIntegrations`). List what the AOP expects to reach versus what's actually attached.
 3. **Check each Connection's live state.** `listConnections` / `getConnection` — is it authenticated, for which account, and is it erroring now? This separates "missing from the Build" from "attached but expired" from "healthy".
 4. **Corroborate with Runs when a failure is claimed.** If the user reports a block, pull the recent Runs (`listRuns`) and confirm the Connection error is what's stopping them. If the depth is in one Run's transcript, that's a `run-debugger` handoff — don't reproduce transcript analysis here.
 5. **Name the break and the fix.** Place it in the taxonomy below and state the one concrete change — and, crucially, **who has to make it** (some fixes are yours to stage as a new Build; the OAuth consent and new credentials are the user's).
@@ -114,7 +116,7 @@ Avoid: "check your connections", "the auth is broken", "try reconnecting". Vague
 
 ## Anti-patterns — reject
 
-- **Diagnosing without inventorying the Build's Connections.** If you haven't read `listRevisionIntegrations` (API mode) or been told what's attached (paste mode), you're guessing.
+- **Diagnosing without inventorying the Build's Connections.** If you haven't read `getAutomationReadiness` for an Automation's live Builds, or `listRevisionIntegrations` for the Build in question (API mode), or been told what's attached (paste mode), you're guessing. Readiness never covers the Build an older Run ran.
 - **Checking the current Build when the failing Runs ran an earlier one.** Inventory the Build the Runs actually ran; Connections may have changed since.
 - **Stopping at the symptom.** A 401 is not the diagnosis; _which link in the credential chain broke_ is.
 - **Claiming you re-authenticated or created a credential.** You can't complete an OAuth consent or mint a credential — say who must.
