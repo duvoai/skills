@@ -2,12 +2,12 @@
   "name": "duvo",
   "displayName": "Duvo",
   "version": "1.0.0",
-  "description": "Operate Duvo from Cursor: debug failed Runs, audit Agents and Queues, doctor Connections, and write AOPs — with the Duvo MCP server wired in.",
+  "description": "Connect your Duvo workspace to start and monitor agent runs, manage case queues, analyze Clarity processes, create Pulse dashboards and much more.",
   "author": {
     "name": "Duvo",
     "email": "support@duvo.ai"
   },
-  "homepage": "https://docs.duvo.ai",
+  "homepage": "https://duvo.ai",
   "repository": "https://github.com/duvoai/skills",
   "license": "MIT",
   "logo": "assets/logo.svg",
