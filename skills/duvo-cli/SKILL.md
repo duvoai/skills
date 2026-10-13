@@ -3,7 +3,7 @@ name: duvo-cli
 description: >
   Drive the Duvo public API from the terminal via the `duvo` CLI
   (`@duvoai/cli`). Use when the user wants to script Duvo — managing
-  agents, runs, cases, queues, files, skills, connections, Clarity
+  automations, Policy, agents, runs, cases, queues, files, skills, connections, Clarity
   processes, Pulse dashboards, or hitting an arbitrary endpoint via
   `duvo api` — instead of clicking through the Duvo web UI or
   hand-crafting `curl` calls.
@@ -13,7 +13,7 @@ compatibility: >
   their host runtime instructions; standalone setup is documented below.
 metadata:
   author: duvoai
-  version: "1.12.1"
+  version: "1.13.0"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -167,6 +167,7 @@ See `references/commands.md` for the full command tree with flags.
 The top-level groups are:
 
 - **Auth & profiles** — `login`, `logout`, `whoami`, `profiles …`
+- **Automations** — `automations …` (list, create, get, current, flow, rename, duplicate, delete, add/remove agents and queues, tabs) and their Policy: `automations config-fields`, `add-config-field`, `edit-config-field`, `set-config-field`, `hide-config-field`, `restore-config-field`, `config-sections …`
 - **Agents** — `agents …`, `agents delete`, `agents move`, `agents duplicate`/`clone`, `agents models`, `agents set-model`, `agents case-triggers …`, `agents schedules …`, `agents triggers …`, `agents slack-triggers …`, `agents memory …`, `agents eval-scores`, `agents eval-rubrics …`
 - **Suggestions** — `suggestions …` (Connection suggestions: list, consume, reject)
 - **Agent folders** — `agent-folders …` (organize agents in a tree)
@@ -189,6 +190,80 @@ The top-level groups are:
 For end-to-end recipes (create an agent → start a run → respond to
 HITL; manage a queue and its cases; upload files for a sandboxed run;
 authorize a custom MCP server) see `references/workflows.md`.
+
+## Automations
+
+On a team that has moved to Automations, every agent and queue belongs to
+an automation: the container the web app shows for one process.
+
+- `duvo automations create --name <name>` creates the automation and its
+  first agent. The `--json` response carries `automation.id` and
+  `first_agent_id`. Configure that first agent instead of creating another.
+- `duvo queues create` requires `--automation-id <id>`. Without it the API
+  returns 409: "This team has moved to Automations, so a new agent or queue
+  must be created inside one."
+- `duvo agents create` accepts the same `--automation-id`. Without it the
+  backend creates a new automation named after the agent, so pass the flag
+  to keep every agent of one process in one automation.
+- `duvo automations list` gives the IDs; `duvo automations current <id>`
+  shows the agents, queues, triggers and schedules the automation runs now.
+
+On a team that hasn't moved, `automations` commands return 403 ("This team
+hasn't moved to Automations, so it has no automations to work with.") and
+agents and queues are created without the flag.
+
+## Recommended build order
+
+When building a process from the CLI, work in this order. Each step
+depends on the one before it.
+
+1. **Connections.** For every service the agents use, check
+   `duvo connections list --team <target-team-id> --type <slug>`. Connect
+   what is missing first (see "Native OAuth provider keys" below). A
+   connection that doesn't exist can't be pinned later.
+2. **Automation.** `duvo automations create --name <name> --json`. Keep
+   `automation.id` and `first_agent_id`.
+3. **Queues, schema, labels.** `duvo queues create --name <name> --automation-id <id>`,
+   then `duvo queues schema create <queue-id> --file schema.json --name <name>`
+   for typed cases, then `duvo queue-labels create`. Schema rules and an
+   example are in workflow 4 of `references/workflows.md`.
+4. **Agents.** Create the remaining agents with `--automation-id`, attach
+   integrations, pin a connection to every OAuth or user-provided slot, and
+   wire queues with `duvo queues link-agent` (`--enable-trigger` for a
+   consumer, or its case trigger starts off). Answer every Policy question
+   the agents read (see "Policy (config fields)" below). Run the setup checklist in
+   workflow 4 of `references/workflows.md` before going on.
+5. **Case triggers on.** `duvo agents case-triggers list <consumer-agent-id> --json`
+   must show `enabled: true`. If it shows `false` with `pending_change` set,
+   the team saves automation changes to a draft: the trigger switches on
+   only when someone clicks **Make active** in the automation's header in
+   the Duvo app, and the CLI has no command for it. Ask the user to do that;
+   until then a test case stays Pending.
+6. **Test run.** `duvo runs start --agent <id>`, or add one test case to the
+   queue, and read the outcome with `duvo runs get <run-id>`.
+7. **Schedule, created paused.** Pass the user's IANA timezone explicitly:
+   ```bash
+   duvo agents schedules create <agent-id> --frequency workday --time 07:30 \
+     --timezone Europe/Prague --disabled
+   duvo agents schedules update <agent-id> <schedule-id> --enable   # after the test run is right
+   ```
+   Whoever creates the schedule receives that agent's approval requests
+   (see "Approvals go to the Run's author" below).
+
+## Policy (config fields)
+
+An automation's **Policy** holds typed answers such as thresholds,
+mailboxes and sender lists. Put values a person will tune there, not in AOP
+text. An agent reads a field when its AOP contains
+`<DUVO:CONFIG key="<key>" name="<label>">`, and each run is handed the
+current answers, so changing an answer needs no new revision. A run is
+refused while a field it reads has no answer.
+
+**Agents can't write Policy.** Values change on the Policy screen, with
+`duvo automations set-config-field`, or through Ask Duvo on a user's
+instruction. Rules an agent learns while running belong in a file or in
+agent memory. Commands, answer types, value shapes, `--fill-mode` and
+`--binding` are in `references/commands.md` under "Policy (config fields)".
 
 ## Conventions you can rely on across commands
 
@@ -218,6 +293,8 @@ the CLI rather than restating per-command:
   `duvo cases bulk-update-priority`,
   `duvo skills delete`, `duvo skills revisions delete`,
   `duvo queues delete`, `duvo secrets delete`,
+  `duvo automations delete`, `duvo automations remove-agent`,
+  `duvo automations remove-queue`,
   `duvo credentials delete`, `duvo revision-secrets detach`,
   `duvo revision-logins detach`, `duvo revision-integrations remove`,
   `duvo revision-integrations connections unpin`,
@@ -275,6 +352,24 @@ the CLI rather than restating per-command:
   flow). OAuth-based connections (Gmail, Slack, …) are started by
   `duvo oauth native start <provider>`, not by `duvo connections create`
   — the latter is only for user-provided MCP servers.
+- **An empty `connections list` is per user and per team.** It lists the
+  calling user's connections in the selected team, plus connections shared
+  with that team. `integrations list` rows always show
+  `has_oauth_tokens: false`: they are catalog slots, not accounts. So
+  integrations listed with 0 connections means this user has authorized
+  nothing in this team yet. Check `duvo whoami` and the `--team` you passed
+  before concluding the account is missing.
+- **Native OAuth provider keys are not integration types.**
+  `oauth native start` takes the provider key, which `integrations list --json` reports as
+  `oauth_provider_key` (Gmail is `google_gmail`, Google Calendar is
+  `google_calendar`, Outlook is `microsoft_outlook`). Passing the type
+  (`gmail`) returns "Unknown OAuth provider". A `null` key means the
+  integration isn't a native OAuth one. HubSpot, Asana, Attio, Amplitude,
+  Supabase, Notion, Granola and Apify connect through MCP OAuth instead; the
+  server URL and `--integration-type` for each are in `references/commands.md`
+  under "OAuth flows":
+  `duvo oauth mcp authorize --url https://mcp.hubspot.com --name HubSpot --integration-type hubspot`.
+  Connect anything else with a `null` key in the web app.
 - **Attached ≠ connected.** `revision-integrations attach` only creates
   the integration **slot** on the revision. For OAuth and user-provided
   integrations (HubSpot, Gong, Slack, custom MCP, …) the run can only
@@ -289,6 +384,19 @@ the CLI rather than restating per-command:
   case-queue slots need a **queue mapped** instead, verified with
   `duvo revision-integrations case-queue-setup`. See workflow 7 and the
   setup checklist in workflow 4 of `references/workflows.md`.
+- **A queue with no consumer keeps its cases in Pending.** Nothing claims
+  them, so they stay there until a person closes them by hand
+  (`duvo cases bulk-update-status`). Don't create an
+  "audit" or "log" queue that only a producer writes to. For a record of
+  what happened, have the agent write a file (`duvo files …`) or add one
+  digest case per run to a queue that does have a consumer.
+- **Approvals go to the Run's author.** A human-in-the-loop request lands
+  with whoever the run belongs to: a scheduled run belongs to the person
+  who created the schedule, and a case-triggered run belongs to the owner of
+  the previous run on that case, falling back to whoever created the case.
+  A schedule created with an API key belongs to the key's user. The request
+  lands in that person's Requests inbox, so create schedules as the person
+  who should answer the approvals.
 - **Secrets vs connections vs credentials.** Three separate stores:
   `duvo secrets` holds env-var key/value pairs injected into runs at
   runtime; `duvo credentials` holds browser logins (domain + password
@@ -374,8 +482,9 @@ Steer users to a different surface in these cases:
 - `references/commands.md` — full command tree with flags, grouped by
   resource. Use this when you need the exact flag a command expects.
 - `references/workflows.md` — end-to-end recipes (create an agent and
-  start a run; queue + cases lifecycle; sandboxed runs with uploaded
-  files; authorize a custom MCP server).
+  start a run; decisions through HITL; queue + cases lifecycle, case
+  schemas and dedupe; sandboxed runs with uploaded files; authorize a
+  custom MCP server).
 - `references/api-escape-hatch.md` — `duvo api` flag reference, with
   worked examples of `-f` vs `-F`, `@file` typed fields, and
   `--input` for raw JSON bodies.

@@ -85,6 +85,31 @@ duvo runs respond "$run_id" --answer "approval=yes" --answer "reason=Looks fine"
 
 `--answer` is repeatable for multi-question request types.
 
+The request goes to the **Run's author**: for a scheduled run, the person
+who created the schedule; for a case-triggered run, the owner of the
+previous run on that case, falling back to whoever created the case. It
+lands in that person's Requests inbox (and Slack or Teams, if they have it
+on), so create schedules as the person who should approve.
+
+### A decision on a case
+
+A case has no built-in decision field or button. To have a person decide
+on each case, write the consumer's AOP so it asks:
+
+1. The consumer run works the case up to the decision point.
+2. It sends a human-in-the-loop **Question** request with the options
+   (for example "reply", "delegate", "archive") and the facts needed to
+   choose.
+3. While it waits, the run and its case show **Needs Input**. Find the
+   open ones with `duvo cases list --queue <id> --status needs_input`.
+4. The answer comes back to the same run, which acts on it and settles
+   the case. Answer from the CLI with
+   `duvo runs respond <run-id> --answer "<question>=<option>"`, or in the
+   web app, Slack or Teams.
+
+Record the decision on the case (a typed field via `set-fields`, or a
+label) so it can be filtered and counted later.
+
 ## 4. Work with a queue
 
 Create a queue, wire up the agents that produce and consume its cases,
@@ -116,10 +141,18 @@ The `case-queue-producer` / `case-queue-consumer` integrations are
 seeded per team (provider `default`) and appear in `duvo integrations
 list`.
 
+⚠️ **A queue with no consumer.** Cases on a queue that no agent consumes
+stay **Pending** until a person closes them by hand, because nothing
+claims them. An
+"audit" queue that only a producer writes to fills up with Pending cases.
+For a log of what happened, write a team file (`duvo files …`), or add one
+digest case per run to a queue that has a consumer.
+
 ### Wire up producer and consumer agents
 
 ```bash
-# 1. Create the queue.
+# 1. Create the queue. On a team that has moved to Automations, also pass
+#    --automation-id <id> (the API returns 409 without it).
 queue=$(duvo queues create --team <target-team-id> --name "Inbound invoices" --json | jq -r .queue.id)
 
 # 2. Producer: attaches case-queue-producer on the agent's live revision
@@ -142,7 +175,11 @@ duvo queues unlink-agent "$queue" --agent <consumer-agent-id> --role consumer
 `link-agent` operates on the agent's **live revision** by default; pass
 `--revision <id>` to target a specific one. Without `--enable-trigger`
 the consumer's trigger is created **disabled** and won't pick up cases
-until enabled (`duvo agents case-triggers update`). To inspect or
+until enabled (`duvo agents case-triggers update`). On a team that saves
+automation changes to a draft, the trigger stays disabled even with
+`--enable-trigger`: `case_trigger.pending_change` in the `--json` output
+holds the change, and it applies when someone clicks **Make active** on
+the automation in the Duvo app. To inspect or
 re-map a slot's linked queues directly, use `duvo revision-integrations
 queues list|set`.
 
@@ -260,6 +297,105 @@ duvo cases labels unlink <case-id> --queue "$queue" --label "priority=urgent"
 
 `bulk-*` operations accept 1-100 IDs at a time, comma-separated, via
 `--ids`.
+
+### Give a queue a Case schema
+
+A Case schema makes every new case carry typed `json_data` instead of
+free text, which `cases search --field`, `cases set-fields` and
+aggregations work on. The validator accepts a subset of JSON Schema
+2020-12:
+
+- The root is `"type": "object"`, and **every object schema, nested ones
+  included, sets `"additionalProperties": false`**. Without it,
+  `queues schema create` returns 400 "Object schemas must set
+  additionalProperties to false".
+- Allowed keywords: `$schema`, `$defs`, `$ref`, `type`, `properties`,
+  `required`, `additionalProperties`, `items`, `enum`, `const`,
+  `description`, `format`, `minimum`, `maximum`, `minLength`, `maxLength`,
+  `minItems`, `maxItems`. Formats: `date`, `date-time`, `email`, `uuid`.
+- Property names start with a letter or underscore and use at most 64
+  letters, digits or underscores. Arrays need `items`.
+
+```bash
+cat > schema.json <<'JSON'
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["message_id", "sender", "category"],
+  "properties": {
+    "message_id": {
+      "type": "string",
+      "description": "Gmail message ID, used to find an existing Case"
+    },
+    "sender": { "type": "string", "format": "email" },
+    "subject": { "type": "string", "maxLength": 500 },
+    "category": { "type": "string", "enum": ["reply", "delegate", "archive"] },
+    "received_at": { "type": "string", "format": "date-time" },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "size_bytes": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}
+JSON
+duvo queues schema create "$queue" --file schema.json --name "Inbox message"
+duvo queues schema get "$queue"
+
+# Typed cases send --json-data (or "json_data" per case in --from-file).
+duvo cases create --queue "$queue" --title "Invoice question" \
+  --json-data '{"message_id":"<message-id>","sender":"ana@example.com","category":"reply"}'
+
+# Change the schema later: a new version, with a reason.
+duvo queues schema set "$queue" --file schema.json --message "Add received_at"
+```
+
+`duvo queues schema guard on <queue-id>` rejects free-text cases on that
+queue from then on; `guard off` allows them again.
+
+### Avoid duplicate cases
+
+Duvo does not deduplicate cases. A producer that runs on a schedule sees
+the same item again on the next run, and creating it again makes a second
+case. Give each item a stable key in the schema (above, `message_id`),
+then look it up before creating:
+
+```bash
+key="<message-id>"
+existing=$(jq -n --arg key "$key" '{
+    filters: {
+      status: ["pending", "processing", "needs_input", "postponed"],
+      json_data: [{ path: "$.message_id", operator: "equals", value: $key }]
+    },
+    limit: 1
+  }' | duvo api POST "/v2/queues/$queue/cases/search" --input - --json \
+  | jq -r '.cases[0].id // empty')
+
+if [ -n "$existing" ]; then
+  # Already open: update it instead of creating a second case.
+  duvo cases set-fields "$existing" --set '$.category="delegate"'
+else
+  duvo cases create --queue "$queue" --title "Invoice question" \
+    --json-data "{\"message_id\":\"$key\",\"sender\":\"ana@example.com\",\"category\":\"reply\"}"
+fi
+```
+
+The lookup goes through `duvo api` with a JSON body so the key stays a
+string. `cases search --field` sends any value that looks like a number
+as a number: a long all-digit key such as `9007199254740993` goes out as
+`9007199254740992`, matches nothing, and the producer adds a duplicate.
+Add `"resolved"` to `status` if a finished item must never come back.
+Inside an agent, the producer does the same check with `list_cases`
+(filters such as `title_search` and `status`) before `add_cases`, so put
+the key in the case title too.
 
 ## 5. Sandboxed runs with uploaded files
 
