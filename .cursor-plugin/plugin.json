@@ -1,0 +1,24 @@
+{
+  "name": "duvo",
+  "displayName": "Duvo",
+  "version": "1.0.0",
+  "description": "Connect your Duvo workspace to start and monitor agent runs, manage case queues, analyze Clarity processes, create Pulse dashboards and much more.",
+  "author": {
+    "name": "Duvo",
+    "email": "support@duvo.ai"
+  },
+  "homepage": "https://duvo.ai",
+  "repository": "https://github.com/duvoai/skills",
+  "license": "MIT",
+  "logo": "assets/logo.svg",
+  "keywords": ["duvo", "agents", "automation", "aop", "queues", "operations", "mcp"],
+  "category": "integrations",
+  "tags": ["duvo", "automation", "operations", "mcp"],
+  "skills": "./skills/",
+  "mcpServers": {
+    "duvo": {
+      "type": "http",
+      "url": "https://api.duvo.ai/v2/mcp"
+    }
+  }
+}
