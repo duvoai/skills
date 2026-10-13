@@ -160,9 +160,12 @@ queue=$(duvo queues create --team <target-team-id> --name "Inbound invoices" --j
 duvo queues link-agent "$queue" --agent <producer-agent-id> --role producer
 
 # 3. Consumer: attaches case-queue-consumer, maps the queue, AND creates the
-#    case trigger. --enable-trigger starts it picking up cases immediately.
+#    case trigger. --enable-trigger turns the trigger on (on a team with
+#    drafts, see below). --concurrency 1 runs the queue's cases one at a
+#    time. 1 is the only value accepted; leave the flag out to keep the
+#    queue's current cap.
 duvo queues link-agent "$queue" --agent <consumer-agent-id> \
-  --role consumer --enable-trigger --concurrency 3
+  --role consumer --enable-trigger --concurrency 1
 
 # 4. Verify both ends are wired (watch the PROBLEMS column on either side).
 duvo queues agents "$queue"
