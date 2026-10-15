@@ -49,7 +49,7 @@ pass `-y` explicitly after obtaining the required confirmation.
 ## Managed Ask Duvo key restrictions
 
 Ask Duvo runs against a **managed API key**. The backend's managed-key
-boundary closes 47 operations to that key outright, and 4 Pulse operations
+boundary closes 47 operations to that key outright, and 5 Pulse operations
 more wherever Pulse authoring in Ask Duvo is turned on for the key's user and
 team (Ask Duvo then edits dashboards in the chat itself rather than driving the
 Pulse agent). It matches on **operation ID**, so every command
@@ -74,12 +74,12 @@ directly under one, so this is the one list to check before promising a write.
 
 **Denied only where Pulse authoring in Ask Duvo is on** — on those teams Ask
 Duvo builds and edits the dashboard in the chat, so it may not drive, answer or
-stop the separate Pulse agent:
+stop or refresh the separate Pulse agent:
 
 - `pulse create`, `pulse send-message` — 403 "Use the inline Pulse artifact
   tools to create or iterate this dashboard".
-- `pulse answer`, `pulse stop` — 403 "Ask Duvo edits this dashboard in the
-  chat: use prepare_pulse_workspace and save_pulse_dashboard".
+- `pulse answer`, `pulse stop`, `pulse refresh` — 403 "Ask Duvo edits this
+  dashboard in the chat: use prepare_pulse_workspace and save_pulse_dashboard".
 
 ## Automations
 
@@ -879,8 +879,8 @@ your team's data into a live HTML document. Each dashboard has an owner
 
 Under a **managed Ask Duvo key**, `pulse connections attach`/`detach` and
 `pulse duplicate` are always denied, and `pulse create`, `pulse send-message`,
-`pulse answer` and `pulse stop` are denied wherever Pulse authoring in Ask Duvo
-is on (Ask Duvo edits the dashboard in the chat there instead). See
+`pulse answer`, `pulse stop` and `pulse refresh` are denied wherever Pulse
+authoring in Ask Duvo is on (Ask Duvo edits the dashboard in the chat there instead). See
 [Managed Ask Duvo key restrictions](#managed-ask-duvo-key-restrictions).
 
 | Command                                                                                                                | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                            |
@@ -895,7 +895,7 @@ is on (Ask Duvo edits the dashboard in the chat there instead). See
 | `duvo pulse attach <id> <file> [--json]`                                                                               | Upload a file into a dashboard's sandbox and print its attachment ID without sending a message — use to stage a file when the instruction will be sent separately. Repeatable, max 5 files per dashboard, 25MB each.                                                                                                                                                                                                                               |
 | `duvo pulse attachment-url <id> <attachment-id> [--json]`                                                              | Get a short-lived download URL for a file attached to a dashboard. Not-found once the dashboard's sandbox has expired (~12h).                                                                                                                                                                                                                                                                                                                      |
 | `duvo pulse stop <id> [--json]`                                                                                        | Stop an in-flight dashboard generation turn (creator only). No-op if nothing is generating. Denied for a managed Ask Duvo key where Pulse authoring in Ask Duvo is on (see above).                                                                                                                                                                                                                                                                 |
-| `duvo pulse refresh <id> [--json]`                                                                                     | Refresh a dashboard's data in place. Runs in the background — poll `pulse get` for status.                                                                                                                                                                                                                                                                                                                                                         |
+| `duvo pulse refresh <id> [--json]`                                                                                     | Refresh a dashboard's data in place. Runs in the background — poll `pulse get` for status. Denied for a managed Ask Duvo key where Pulse authoring in Ask Duvo is on (see above).                                                                                                                                                                                                                                                                  |
 | `duvo pulse rename <id> --title <text> [--json]`                                                                       | Rename a dashboard (1-120 chars, creator only).                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `duvo pulse share <id> --visibility <private\|team\|organization> [--permission <view\|edit>] [--json]`                | Share a dashboard with your team or organization, or revert to private (creator only). `--permission` only applies when sharing.                                                                                                                                                                                                                                                                                                                   |
 | `duvo pulse duplicate <id> [--json]`                                                                                   | Duplicate a dashboard into a new idle clone. Conversation, shares, and connections are not copied. Always denied for a managed Ask Duvo key (see above).                                                                                                                                                                                                                                                                                           |
