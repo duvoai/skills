@@ -873,6 +873,19 @@ Link types: `hands_off_to`, `shares_step_with`, `variant_of`. Link states:
 | `duvo clarity process-links update <link-id> [--org <org-id>] [--source-node <id>] [--target-node <id>] [--type <type>] [--state <state>] [--confidence <0-1>] [--clear-confidence] [--json]` | Update fields on an existing process link. Only supplied fields change.                        |
 | `duvo clarity process-links delete <link-id> [--org <org-id>] [--json]`                                                                                                                       | Delete a process link.                                                                         |
 
+### Clarity interview invitations
+
+For several interview recipients on one process, prefer one `send` call with
+repeated `--invitee` flags over individual `invite create --process` calls.
+See the [interview invitation workflow](workflows.md#14-invite-people-to-a-clarity-interview)
+for batching and delivery handling. These commands are available to managed
+Ask Duvo keys, subject to process permissions.
+
+| Command                                                                                                                                 | Purpose                                                                                                                                                                                                                                                    |
+| --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `duvo clarity interview-invites send <process-id> [--invitee <email[:Name]>]... [--include-process-people] [--message <text>] [--json]` | Email interview invitations to up to 25 unique recipients per call. Repeat `--invitee` for multiple people; `--include-process-people` also includes everyone already listed on the process. `--message` adds a plain-text note of at most 500 characters. |
+| `duvo clarity interview-invites list <process-id> [--limit <n>] [--offset <n>] [--json]`                                                | List invitations and interview status. `--limit` is 1–100 (default 50); `--offset` skips invitations for pagination.                                                                                                                                       |
+
 ## Pulse
 
 `duvo pulse …` manages Pulse dashboards — AI-generated reports that synthesize
@@ -999,6 +1012,8 @@ Under a **managed Ask Duvo key** `team remove-member`, `team set-role`, `team le
 | `duvo teams org-usage <org-id> [--start-date <date>] [--end-date <date>] [--granularity <day\|week\|month>] [--json]`                                                                                                                                                                                                                                                                             | Org-level usage bucketed by `--granularity` (default `day`) over a window (default: last 30 days, capped at 365 days). Same org-role requirement as `teams org`.                                                                                                                                                                                                                                                                                                                                                                           |
 
 ## Invitations
+
+For Clarity interview invitations, use [the process interview commands](#clarity-interview-invitations). `invite bulk` creates team invitations and has no `--process` option.
 
 Under a **managed Ask Duvo key** all ten `duvo invite` commands are denied — see [Managed Ask Duvo key restrictions](#managed-ask-duvo-key-restrictions).
 

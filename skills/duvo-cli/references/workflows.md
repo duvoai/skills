@@ -581,8 +581,9 @@ duvo clarity import-artifact "$process_id" ./miro-process-map.svg
 duvo clarity import-artifact "$process_id" ./exception-path.xml \
   --extra-capture-request-id <request-id>
 
-# 3. Create an interview link and send the printed URL to the interviewee.
-duvo clarity create-invite-link "$process_id"
+# 3. Email interview invitations together (up to 25 unique recipients).
+duvo clarity interview-invites send "$process_id" \
+  --invitee alice@example.com --invitee bob@example.com --json
 
 # 4. Regenerate documentation after new source material is available.
 duvo clarity generate-current-process "$process_id"
@@ -744,3 +745,47 @@ runs actually execute — filter `status == "live"` as above; the latest
 revision may be an unpromoted draft. These revision commands are scoped by
 the Agent and Build IDs; global `--team` does not change their resource path.
 For a failed Run, use its recorded `build_id` instead of the current live Build.
+
+## 14. Invite people to a Clarity interview
+
+When the user asks to invite several people to interview about one process,
+collect the intended recipients and send them together:
+
+```bash
+duvo clarity interview-invites send <process-id> \
+  --invitee alice@example.com:Alice \
+  --invitee bob@example.com:Bob \
+  --json
+```
+
+Use the process ID the user selected. Resolve names to email addresses first
+when needed. Deduplicate recipients and split lists larger than 25 into batches
+of at most 25 unique addresses per process. The equivalent MCP tool is
+`sendClarityInterviewInvites`, with recipients in its `invitees` array.
+
+Only when the user wants everyone already listed as a person on the process,
+use `--include-process-people` (MCP: `includeProcessPeople: true`). It can be
+combined with explicit invitees, but the combined unique recipient count must
+still be at most 25. For larger lists, use explicit batches instead. Add
+`--message "Please share how this process works today."` for an optional note
+of at most 500 characters.
+
+The command sends emails immediately. Depending on the team's settings and the
+recipient's account, the email contains an account-free interview link or a
+sign-in invitation. It does not expose `--no-interview` or `--process-role`;
+use `invite create` when the request needs those options. `invite bulk` is for
+team invitations and cannot target a process.
+
+Read every result in `.invites[]` and report sent and failed recipients. A
+non-zero exit can mean partial delivery. Sending to an already invited person
+emails their existing invitation again, so do not retry an entire batch after
+a partial failure or an uncertain response. Check delivery before retrying
+uncertain recipients, and retry only the recipients that still need an email.
+
+```bash
+duvo clarity interview-invites list <process-id> --limit 50 --offset 0 --json
+```
+
+This lists invitation and interview status; it does not prove email delivery
+after a timeout. Continue with `--offset 50`, `100`, and so on to read more
+pages when needed.

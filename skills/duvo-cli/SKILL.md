@@ -13,7 +13,7 @@ compatibility: >
   their host runtime instructions; standalone setup is documented below.
 metadata:
   author: duvoai
-  version: "1.13.1"
+  version: "1.13.2"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -264,6 +264,14 @@ refused while a field it reads has no answer.
 instruction. Rules an agent learns while running belong in a file or in
 agent memory. Commands, answer types, value shapes, `--fill-mode` and
 `--binding` are in `references/commands.md` under "Policy (config fields)".
+
+## Invite people to a Clarity interview
+
+Prefer `duvo clarity interview-invites send <process-id>` with repeated `--invitee`
+flags for multiple interview recipients: at most 25 unique recipients per batch.
+`invite bulk` is team-only; use `invite create` for `--no-interview` or `--process-role`.
+Read [the interview invitation workflow](references/workflows.md#14-invite-people-to-a-clarity-interview)
+for recipient selection and delivery handling; avoid one-by-one loops.
 
 ## Conventions you can rely on across commands
 
