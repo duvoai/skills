@@ -78,19 +78,19 @@ Answering a question is free. **Changing the step's program is a save**, and it 
 When the user wants the program written or changed:
 
 1. Confirm what the change should do. A request for advice is not authorization to save.
-2. Run the generation lifecycle in `.claude/skills/meta-agent/references/automation-editing.md` — `generateRevision` on the step's Build with the confirmed prompt, poll `getBuilderRun`, present the diff, and accept or decline on the user's word. It writes a draft for review; it does not promote or activate anything.
+2. Run the generation lifecycle in `references/generation.md` — `generateRevision` on the step's Build with the confirmed prompt, poll `getBuilderRun`, present the diff, and accept or decline on the user's word. It writes a draft for review; it does not promote or activate anything.
 3. The generation is given this same SDK reference **and this revision's tool catalog**, so restate neither in the prompt. Pass what the author wants the step to _do_.
 
 Two things it cannot edit, and the user should be told before they type a prompt rather than after: a step whose source is its own **files** rather than a program on the Build, and a Build whose config cannot be read.
 
 ## Boundaries
 
-| The user wants                                      | Skill                                                        |
-| --------------------------------------------------- | ------------------------------------------------------------ |
-| What the `duvo` SDK can do, or a snippet against it | This skill                                                   |
-| Which Connections and tools one revision has        | This skill — `listCodeStepTools`, `describeCodeStepTools`    |
-| An Agent's AOP written, rewritten, or critiqued     | `aop-writer` — none of the SDK applies to an AOP             |
-| Why one Code Step Run failed                        | `run-debugger`, then come back here if the fix is in the SDK |
-| Where a Code Step belongs in a new workflow         | `workflow-architect`                                         |
+| The user wants                                      | Skill                                                                                                                                                                  |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| What the `duvo` SDK can do, or a snippet against it | This skill                                                                                                                                                             |
+| Which Connections and tools one revision has        | This skill — `listCodeStepTools`, `describeCodeStepTools`                                                                                                              |
+| An Agent's AOP written, rewritten, or critiqued     | `aop-writer` — none of the SDK applies to an AOP                                                                                                                       |
+| Why one Code Step Run failed                        | `run-debugger`, then come back here if the fix is in the SDK                                                                                                           |
+| Where a Code Step belongs in a new workflow         | Use `workflow-architect` when available; otherwise use the current workflow and `references/sdk.md` to explain placement. Do not claim to invoke an unavailable skill. |
 
 A Code Step never conducts human interaction — it flags, and an Agent node conducts the escalation. If the user is asking how to ask a person something from inside a Code Step, that is the answer: it belongs in the Agent after it.

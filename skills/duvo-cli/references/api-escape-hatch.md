@@ -50,9 +50,8 @@ api`'s own flags for building a request body; a high-level command's
   (`/v2/agents/<id>`) and others stay team-scoped
   (`/v2/teams/<team_id>/invites/<id>`). Take the exact path from
   `GET /v2/documentation/json` — the raw OpenAPI document, since
-  `/v2/documentation` itself serves the Swagger UI HTML — or from the tool
-  matrix in
-  `duvo-cli/docs/mcp-cli-parity-audit.md` rather than guessing.
+  `/v2/documentation` itself serves the Swagger UI HTML. Do not guess paths
+  from another resource or rely on files outside this skill.
 
 ## Where this differs from `gh api`
 
