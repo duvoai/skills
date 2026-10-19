@@ -431,6 +431,13 @@ surface.
 
 ## 6. Authorize a custom MCP server
 
+Duvo's own MCP endpoints (`https://api.duvo.ai/v2/mcp` and the legacy
+`/v1/mcp`, including staging) cannot complete custom OAuth authorization.
+Use the API-key path (b) with an encrypted `Authorization: Bearer` header.
+Do not create an OAuth Connection type or generate authorization links for
+these endpoints. Never ask the user to paste their API key into chat; have
+them enter it in the Connection's credential form.
+
 Three paths, depending on whether the MCP server supports OAuth Dynamic
 Client Registration (DCR) and whether you've already registered an
 OAuth client for it yourself:
