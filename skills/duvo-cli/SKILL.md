@@ -179,7 +179,7 @@ The top-level groups are:
 - **Connections & integrations** — `integrations …`, `connections …`, `oauth …`
 - **Secrets & credentials** — `secrets …` (env-var secrets), `credentials …` (browser logins), `revision-secrets …`, `revision-logins …`
 - **Clarity** — `clarity …` (process search, versions, captures, gaps, evidence, facets, export, generation, promotion, artifact imports, invite links, doctor, process landscape, process links, process tags, process summaries)
-- **Pulse** — `pulse …` (create, get, list, send message, attach files, refresh, stop, rename, share, duplicate, move to another team, pdf/snapshot export, version history, restore, messages, answer HITL, connections, comment threads, delete Pulse dashboards, `pulse data …` to connect/disconnect queue data sources)
+- **Pulse** — `pulse …` (create, get, list, send message, attach files, refresh, stop, rename, share, duplicate, move to another team, pdf/snapshot export, version history, restore, messages, answer HITL, connections, comment threads, delete Pulse dashboards)
 - **Skills & plugins** — `skills …`, `plugins …`
 - **Team** — `team current`, `team get`, `team members`, `team set-role`, `team remove-member`, `team leave`, `team use`, `teams list`, `teams org`, `teams orgs`, `teams create-org-team`, `teams create-workspace`, `teams org-agents`, `teams org-insights`, `teams org-metrics`, `teams org-runs`, `teams org-usage`
 - **Invitations** — `invite list`, `invite create`, `invite bulk`, `invite update`, `invite resend`, `invite delete`, `invite org-member`, `invite link get|create|delete`

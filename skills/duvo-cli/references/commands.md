@@ -936,16 +936,6 @@ Under a **managed Ask Duvo key** `pulse connections attach` and `pulse connectio
 | `duvo pulse connections attach <id> <connection-id> [--json]` | Attach one of your connections to a dashboard so the agent can use its data (creator only). Always denied for a managed Ask Duvo key (see above). |
 | `duvo pulse connections detach <id> <connection-id> [--json]` | Detach a connection from a dashboard (creator only). Always denied for a managed Ask Duvo key (see above).                                        |
 
-### Pulse data (connected queues)
-
-`duvo pulse data …` manages which of the team's queues a dashboard may query directly for Cube-style data — distinct from `pulse connections`, which attaches third-party Connections.
-
-| Command                                                                           | Purpose                                                                               |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `duvo pulse data data-sources <artifactId> [--limit <n>] [--offset <n>] [--json]` | Discover queues the dashboard editor may connect.                                     |
-| `duvo pulse data connect <artifactId> <queueId> [--json]`                         | Connect an authorized same-team queue to the dashboard. Idempotent.                   |
-| `duvo pulse data disconnect <artifactId> <queueId> [--json]`                      | Disconnect a queue from the dashboard. Idempotent; doesn't delete the queue or cases. |
-
 ### Pulse comments (element-anchored threads)
 
 `duvo pulse comments …` manages comment threads on a Pulse dashboard, each optionally pinned to a CSS-selected element. Threads are one level deep — a thread's replies can't themselves be replied to.
