@@ -16,7 +16,8 @@ configuration.
 ## Queue (Consumer) — claim a case, write to it, settle it
 
 ```python
-case = duvo.claim_case(queue_id=QUEUE_ID)
+claim = duvo.claim_case(queue_id=QUEUE_ID)
+case = claim["case"]
 
 # Only an unbound run comes back empty. Guard anyway: the same program run on a
 # schedule rather than against one case is the shape that hits it.
@@ -29,9 +30,11 @@ duvo.update_case(case_id=case["id"], data={"computed_total": total})
 duvo.complete_case(case_id=case["id"], reason=f"Reconciled at {total}")
 ```
 
-- `duvo.claim_case(queue_id=...)` — take a case to work on. On a case-bound run
-  this returns _that_ case, so it cannot be None; on an unbound run it pulls the
-  next pending case, and returns None when the queue is empty.
+- `duvo.claim_case(queue_id=...)` — take a case to work on. It returns
+  `{"claimed": ..., "next_action": ..., "case": ...}`; read the case from
+  `["case"]`. On a case-bound run that is _that_ case, so it cannot be None; on
+  an unbound run it is the next pending case, and None (with `claimed` False)
+  when the queue is empty.
 - `duvo.update_case(case_id=..., data={...})` — write to the claimed case.
   Also takes `title` and label arguments.
 - `duvo.complete_case(case_id=..., reason=...)` — settle as done.
