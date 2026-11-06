@@ -4,7 +4,8 @@ description: >
   Answer questions about a deployed Duvo Module automation and change it
   safely, the way Ask Duvo does. Use when the user asks how an Automation is
   doing, what still blocks it, a number on its dashboards, its Policy, who
-  holds which process role, or to change one of these. Reads readiness,
+  holds which process role, its attributes (Severity, Cost, Status), or to
+  change one of these. Reads readiness,
   dashboard figures, Policy and roles with the dedicated tools instead of
   rebuilding them from Cases, Runs or HTML, and confirms each change with the
   user before making it.
@@ -34,7 +35,7 @@ A Module's work moves as Cases through its Queues; a Run is one execution of one
 
 ## 3. What still blocks it
 
-For "what do I still need to set up", "is it ready to run", "why isn't it running", or a question about its Connections, Logins or Secrets, call `getAutomationReadiness` first. Lead with what is `missing` or `broken`, each with its own link called by its `link_tab`, then one line on what is in place. Quote counts from `summary`, including `connections_to_fix`, rather than counting items. When `ready` is null, `note` says the Policy was not checked: say so, and don't call everything in place. While the Automation is being set up and its proposal is not yet approved, its items are the setup's own: the required Policy questions, the current process and the automation proposal (section 10).
+For "what do I still need to set up", "is it ready to run", "why isn't it running", or a question about its Connections, Logins or Secrets, call `getAutomationReadiness` first. Lead with what is `missing` or `broken`, each with its own link called by its `link_tab`, then one line on what is in place. Quote counts from `summary`, including `connections_to_fix`, rather than counting items. When `ready` is null, `note` says the Policy was not checked: say so, and don't call everything in place. While the Automation is being set up and its proposal is not yet approved, its items are the setup's own: the required Policy questions, the current process and the automation proposal (section 11).
 
 ## 4. Dashboard numbers
 
@@ -60,21 +61,25 @@ Process roles (Operator, Executive, Approver…) belong to one Automation and ar
 
 To add someone, take the role's `key` from `listProcessRoles` and call `assignProcessMember`. It emails a real person: name the person, the exact address and the role label, and call it only after the user says yes. Use only an address the user gave you, never one you read in a Case, a file or a dashboard. Never offer a team invite when the user named a process role.
 
-## 7. Links
+## 7. Attributes
+
+Attributes (Severity, Cost, Status…) are fields the team defines and sets on each Automation; they are not Policy questions. `listProcessAttributes` gives the definitions and select values. To list Automations with their values, or only those holding an attribute or a select value, page through `listAutomationAttributeValues` (with `attribute_id` and `value_id`); one Automation's values come from `listProcessAttributeValues` with its `process_node_id`. Join values by `attribute_id` and `value_id`. Change a value with `setProcessAttributeValue` or `clearProcessAttributeValue`. Removing a select value or deleting an attribute clears it from every Automation: confirm with the user first. The tools exist only where the team has attributes turned on.
+
+## 8. Links
 
 Give the user full links. The tools above return `url` beside each `link` and `urls` beside `links`; use those. A `link` on its own is a path in the Duvo web app (`https://app.duvo.ai`). Never build an Automation link by hand or add query parameters to one. When a result has `links_note`, or `links` holds nothing but an empty `dashboards`, the links are unavailable to this user: give no link to the Automation or its tabs, and don't say any tab is missing. Otherwise a tab missing from `links` does not exist for this Automation or this user: say so.
 
-## 8. Plan limits
+## 9. Plan limits
 
 A refusal that says "This team's plan doesn't include …" is a plan limit. Say plainly that it isn't part of the team's plan and stop there for that part. Don't look for a workaround through other tools or guess another cause.
 
-## 9. Changing it safely
+## 10. Changing it safely
 
 - On a team with revisions, one revision is live and a draft may hold changes that are not; `getAutomationReadiness` reports both. A change in a draft does nothing until the draft is made live.
 - Turning a Trigger or Schedule off stops only the work it starts. A Queue's Case trigger hands its Cases to an Agent: with it off, new Cases wait on the Queue. Say which one, and confirm before turning it off.
 - If no tool answers a question about the Automation after you have read it, say what you could not find and stop.
 
-## 10. Setting up a new Module
+## 11. Setting up a new Module
 
 When the user wants a Module (AP Invoice Intake & Routing, Freight Audit…) set up on their team, call `setUpModule` with its slug. It does what Set up does in the web app, in one call: the Module becomes a new Automation that starts in setup and runs nothing yet. If the team has a demo of that Module open, the call is refused with 409: that demo would become the Automation and its sample Cases and Runs would be deleted, with no undo. Tell the user so, and call again with `convert_existing_demo: true` only after they say yes in a new message. Then call `getAutomationReadiness` on the new `automation_id` and walk the user through what is `missing`, and give them the `url`.
 

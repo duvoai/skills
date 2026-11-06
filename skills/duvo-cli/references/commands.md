@@ -173,6 +173,31 @@ duvo automations set-config-field <automation-id> <field-id> --clear
   on the Policy screen, with `set-config-field`, or through Ask Duvo on a
   user's instruction.
 
+### Attributes
+
+Attributes are fields the team defines once and sets on each automation, such
+as Severity (High, Medium, Low), Cost or Status. They are not Policy questions.
+The commands work only on teams with attributes turned on; elsewhere they say
+so. `--automation <id>` reads the automation's `process_node_id`; `--process
+<id>` takes that ID directly.
+
+| Command                                                                                                                                                                               | Purpose                                                                                                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `duvo attributes list [--json]`                                                                                                                                                       | List the team's attributes, their select values and how many processes hold each.                                                                                                                                                                |
+| `duvo attributes create --name <name> --type <select\|number\|text> [--value <label[:hue]> …] [--unit <unit>] [--unit-after] [--json]`                                                | Create an attribute. `--value` (select, repeatable, in order) takes an optional 0-360 hue (`High:10`); end it with `:` to keep a colon in the label (`Time 10:30:`); `--unit` shows before the number unless `--unit-after`. Managers and above. |
+| `duvo attributes update <attribute-id> [--name <name>] [--add-value <label[:hue]> …] [--remove-value <label-or-id> …] [--unit <unit>] [--unit-before\|--unit-after] [--yes] [--json]` | Change an attribute, starting from its current definition. `--remove-value` clears the value from every automation, so it asks first unless `--yes`. A concurrent save fails rather than being overwritten.                                      |
+| `duvo attributes delete <attribute-id> [--yes] [--json]`                                                                                                                              | Delete an attribute, clearing it from every automation. Asks first unless `--yes`.                                                                                                                                                               |
+| `duvo attributes automations [--attribute <attribute-id> [--value <label-or-id>]] [--limit <n>] [--offset <n>] [--json]`                                                              | List the team's automations with the values each holds; `--attribute` and `--value` keep only the automations holding that attribute or select value.                                                                                            |
+| `duvo attributes values (--automation <id>\|--process <id>) [--json]`                                                                                                                 | Show the values an automation holds, by attribute name.                                                                                                                                                                                          |
+| `duvo attributes set <attribute-id> (--automation <id>\|--process <id>) (--value <label-or-id>\|--number <n>\|--text <text>) [--json]`                                                | Set an automation's value. Builder or above, with edit access to the automation.                                                                                                                                                                 |
+| `duvo attributes clear <attribute-id> (--automation <id>\|--process <id>) [--json]`                                                                                                   | Clear an automation's value; the attribute stays on the team.                                                                                                                                                                                    |
+
+```bash
+duvo attributes create --name Severity --type select --value High:10 --value Medium:45 --value Low:200
+duvo attributes set <attribute-id> --automation <automation-id> --value high
+duvo attributes values --automation <automation-id>
+```
+
 ## Agents
 
 | Command                                                                                                                                                                                                                                                                                                                               | Purpose                                                                                                                                                                                        |
