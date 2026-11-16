@@ -433,50 +433,91 @@ surface.
 
 Duvo's own MCP endpoints (`https://api.duvo.ai/v2/mcp` and the legacy
 `/v1/mcp`, including staging) cannot complete custom OAuth authorization.
-Use the API-key path (b) with an encrypted `Authorization: Bearer` header.
+Use path (a) below with an encrypted `Authorization: Bearer` header.
 Do not create an OAuth Connection type or generate authorization links for
 these endpoints. Never ask the user to paste their API key into chat; have
 them enter it in the Connection's credential form.
 
-Three paths, depending on whether the MCP server supports OAuth Dynamic
-Client Registration (DCR) and whether you've already registered an
-OAuth client for it yourself:
+A custom MCP server is registered once as a custom integration, and every
+Connection to it is made through that custom integration with
+`--custom-integration-id`. A Connection from a server URL alone is refused
+with 400. Registering a custom integration needs the Manager role or above;
+if the user's role is below Manager, ask a Manager to register it, then
+connect through it.
+
+Pick one path by how the server authenticates. Each path registers the
+custom integration once, then connects through it. The Connection's
+`--auth-method` must match the custom integration's. Note the id that
+`integrations custom create` prints.
 
 ```bash
 # Probe what tools the server exposes (no auth needed):
 duvo connections probe --url https://mcp.example.com --header "X-Key=demo"
 
-# (a) DCR-capable MCP server — let Duvo register itself.
-duvo oauth mcp check --url https://mcp.example.com
-duvo oauth mcp authorize \
-  --url https://mcp.example.com \
+# (a) Non-OAuth server (or you already have an API key). --auth-method is
+#     one of url, apikey, headers; store the credentials on the Connection.
+duvo integrations custom create \
   --name "Example MCP" \
-  --integration-type custom_mcp
-# Follow the printed authorization URL to grant access.
-
-# (b) Non-OAuth MCP server (or you already have an API key) —
-#     store the credentials yourself.
+  --server-url https://mcp.example.com \
+  --auth-method headers
 duvo connections create \
   --name "Example MCP" \
-  --auth-method api_key \
-  --server-url https://mcp.example.com \
+  --auth-method headers \
+  --custom-integration-id "$CUSTOM_INTEGRATION_ID" \
   --secret-header "Authorization=Bearer dv_xxx" \
   --header "X-Tenant=acme"
 
-# (c) OAuth-capable server that doesn't support DCR (e.g. a NetSuite
-#     Integration record) — pass the client you registered yourself and
-#     skip DCR entirely. Omit --oauth-client-secret for public clients
-#     (PKCE-only).
+# (b) DCR-capable OAuth server — Duvo registers itself as a client.
+duvo oauth mcp check --url https://mcp.example.com
+duvo integrations custom create \
+  --name "Example MCP" \
+  --server-url https://mcp.example.com \
+  --auth-method oauth
 duvo oauth mcp authorize \
-  --url https://example.suitetalk.api.netsuite.com/mcp \
+  --url https://mcp.example.com \
+  --name "Example MCP" \
+  --custom-integration-id "$CUSTOM_INTEGRATION_ID"
+# Follow the printed authorization URL to grant access.
+
+# (c) OAuth server without DCR — put the client you registered on the
+#     authorization server on the custom integration, then authorize as in
+#     (b). Omit --oauth-client-secret for a public (PKCE-only) client.
+#     --oauth-client-id cannot be combined with --custom-integration-id on
+#     `oauth mcp authorize`.
+duvo integrations custom create \
+  --name "Example MCP" \
+  --server-url https://mcp.example.com \
+  --auth-method oauth \
+  --oauth-client-id "$CLIENT_ID" \
+  --oauth-client-secret "$CLIENT_SECRET"
+duvo oauth mcp authorize \
+  --url https://mcp.example.com \
+  --name "Example MCP" \
+  --custom-integration-id "$CUSTOM_INTEGRATION_ID"
+```
+
+`--secret-header` values are encrypted at rest; `--header` values are
+stored as plaintext. Both flags are repeatable. A custom integration name is
+unique in the team, so reuse an existing one (`duvo integrations list`)
+rather than registering the same server twice.
+
+NetSuite is a catalog integration, not a custom MCP server. Connect it with
+`--integration-type netsuite` and the account's SuiteTalk MCP URL, plus the
+client from its Integration record. Omit `--oauth-client-secret` for a
+public (PKCE-only) client:
+
+```bash
+duvo oauth mcp authorize \
+  --url "https://$ACCOUNT_ID.suitetalk.api.netsuite.com/services/mcp/v1/all" \
   --name "NetSuite" \
-  --integration-type custom_mcp \
+  --integration-type netsuite \
   --oauth-client-id "$NETSUITE_CLIENT_ID" \
   --oauth-client-secret "$NETSUITE_CLIENT_SECRET"
 ```
 
-`--secret-header` values are encrypted at rest; `--header` values are
-stored as plaintext. Both flags are repeatable.
+To re-authorize an existing Connection, pass `--reconnect-instance-id` with
+the same `--url` and, for a Connection made through a custom integration,
+the same `--custom-integration-id`.
 
 ## 7. Promote a new revision
 

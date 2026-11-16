@@ -373,9 +373,9 @@ the CLI rather than restating per-command:
   `google_calendar`, Outlook is `microsoft_outlook`). Passing the type
   (`gmail`) returns "Unknown OAuth provider". A `null` key means the
   integration isn't a native OAuth one. HubSpot, Asana, Attio, Amplitude,
-  Supabase, Notion, Granola and Apify connect through MCP OAuth instead; the
-  server URL and `--integration-type` for each are in `references/commands.md`
-  under "OAuth flows":
+  Supabase, Notion, Granola, Apify and NetSuite connect through MCP OAuth
+  instead; the server URL and `--integration-type` for each are in
+  `references/commands.md` under "OAuth flows":
   `duvo oauth mcp authorize --url https://mcp.hubspot.com --name HubSpot --integration-type hubspot`.
   Connect anything else with a `null` key in the web app.
 - **Attached ≠ connected.** `revision-integrations attach` only creates
