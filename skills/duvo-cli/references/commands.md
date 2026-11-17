@@ -773,23 +773,21 @@ Under a **managed Ask Duvo key** `clarity invite-link create` and its alias `cla
 
 ### Clarity interview libraries
 
-Organization and landscape-node commands accept `--org <org-id>` or
-`DUVO_ORG_ID`. Team commands use the selected team.
+Organization commands accept `--org <org-id>` or `DUVO_ORG_ID`. Team commands
+use the selected team.
 
-| Command                                                                                                            | Purpose                                                 |
-| ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
-| `duvo clarity interviews org list [--scope organization\|team] [--org <id>] [--limit <n>] [--offset <n>] [--json]` | List interviews across an organization.                 |
-| `duvo clarity interviews org get <interview-id> [--org <id>] [--json]`                                             | Read an organization interview and transcript.          |
-| `duvo clarity interviews org rename <interview-id> --title <title> [--org <id>] [--json]`                          | Rename an organization interview.                       |
-| `duvo clarity interviews org finalize <interview-id> [--org <id>] [--json]`                                        | Finalize a recording organization interview.            |
-| `duvo clarity interviews org delete <interview-id> [--org <id>] [-y] [--json]`                                     | Delete an organization interview.                       |
-| `duvo clarity interviews org upload-document <file> [--org <id>] [--json]`                                         | Upload an organization document interview.              |
-| `duvo clarity interviews org invite-notetaker --meeting-url <url> [--title <title>] [--org <id>] [--json]`         | Invite the notetaker to an organization meeting.        |
-| `duvo clarity interviews node list <node-id> [--org <id>] [--limit <n>] [--offset <n>] [--json]`                   | List interviews linked to a Process Landscape node.     |
-| `duvo clarity interviews node delete <node-id> <interview-id> [--org <id>] [-y] [--json]`                          | Delete an interview linked to a Process Landscape node. |
-| `duvo clarity interviews team list [--limit <n>] [--offset <n>] [--json]`                                          | List team-level interviews.                             |
-| `duvo clarity interviews team upload-document <file> [--json]`                                                     | Upload a team-level document interview.                 |
-| `duvo clarity interviews team delete <interview-id> [-y] [--json]`                                                 | Delete a team-level interview.                          |
+| Command                                                                                                            | Purpose                                          |
+| ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
+| `duvo clarity interviews org list [--scope organization\|team] [--org <id>] [--limit <n>] [--offset <n>] [--json]` | List interviews across an organization.          |
+| `duvo clarity interviews org get <interview-id> [--org <id>] [--json]`                                             | Read an organization interview and transcript.   |
+| `duvo clarity interviews org rename <interview-id> --title <title> [--org <id>] [--json]`                          | Rename an organization interview.                |
+| `duvo clarity interviews org finalize <interview-id> [--org <id>] [--json]`                                        | Finalize a recording organization interview.     |
+| `duvo clarity interviews org delete <interview-id> [--org <id>] [-y] [--json]`                                     | Delete an organization interview.                |
+| `duvo clarity interviews org upload-document <file> [--org <id>] [--json]`                                         | Upload an organization document interview.       |
+| `duvo clarity interviews org invite-notetaker --meeting-url <url> [--title <title>] [--org <id>] [--json]`         | Invite the notetaker to an organization meeting. |
+| `duvo clarity interviews team list [--limit <n>] [--offset <n>] [--json]`                                          | List team-level interviews.                      |
+| `duvo clarity interviews team upload-document <file> [--json]`                                                     | Upload a team-level document interview.          |
+| `duvo clarity interviews team delete <interview-id> [-y] [--json]`                                                 | Delete a team-level interview.                   |
 
 The CLI exposes durable interview records and capture creation. Browser recording
 sessions, live audio/media transport, signed-upload internals, and ingestion
