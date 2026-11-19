@@ -75,6 +75,7 @@ A refusal that says "This team's plan doesn't include …" is a plan limit. Say 
 
 ## 10. Changing it safely
 
+- For a code step's program files, call `uploadCodeStepFile` for each UTF-8 file, then use `updateRevision` on a draft to put the returned digest and size in its config `source.bundle` file entry and the returned bucket on the bundle. Uploading alone changes no revision. Re-run the draft and check the result. Name the Agent and revision and explain that triggers and new Runs will use it; call `promoteRevision` only after the user explicitly says go in a new message.
 - On a team with revisions, one revision is live and a draft may hold changes that are not; `getAutomationReadiness` reports both. A change in a draft does nothing until the draft is made live.
 - Turning a Trigger or Schedule off stops only the work it starts. A Queue's Case trigger hands its Cases to an Agent: with it off, new Cases wait on the Queue. Say which one, and confirm before turning it off.
 - If no tool answers a question about the Automation after you have read it, say what you could not find and stop.
