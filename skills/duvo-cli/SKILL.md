@@ -13,7 +13,7 @@ compatibility: >
   their host runtime instructions; standalone setup is documented below.
 metadata:
   author: duvoai
-  version: "1.15.0"
+  version: "1.15.1"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---

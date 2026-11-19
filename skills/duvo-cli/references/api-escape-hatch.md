@@ -26,9 +26,15 @@ duvo api <METHOD> <path>
   [-f, --field <key=value> ...]
   [-F, --raw-field <key=value> ...]
   [--input <path|->]
+  [--artifact-id <id>]
   [--json]
 ```
 
+- `--artifact-id <id>` sends the request in a shared Pulse dashboard's
+  context, so it uses that dashboard's data access. An automation's
+  dashboard reads that automation's queues; any other team dashboard reads
+  through the caller's own permissions. The backend still checks the
+  caller, dashboard, source, and requested action.
 - **The long aliases are the reverse of `gh api`'s.** Here `--field`
   is the string form and `--raw-field` the typed one; in `gh api` it is
   `--raw-field` for strings and `--field` for typed values. Only the
