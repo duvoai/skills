@@ -113,7 +113,9 @@ Read two things for the process:
 For each person you invited:
 
 - A capture with their `userId` and `status: "complete"`: they have done their interview.
-- A capture with their `userId` and another status (`recording`, `processing`): their interview is under way.
+- A capture with their `userId` and `status: "recording"` or `"processing"`: their interview is under way.
+- A capture with their `userId` and `status: "pending"`: their capture has not started yet.
+- A capture with their `userId` and `status: "failed"`: their interview failed to record or process — do not report it as under way.
 - No capture with their `userId`, and they're in `members`: they accepted but haven't recorded yet.
 - In `pending`: they haven't accepted the invitation yet.
 
@@ -125,7 +127,7 @@ Once at least one interview is done:
 
 1. Make sure the process has a map. If it isn't in `listClarityProcessSummaries` for the team yet (`duvo clarity process-summaries`; page through with `limit` and `offset` until you have seen `total` processes), call `generateClarityProcessSnapshot` with `process_id` set to the process id and `kind: "current_process"` (`duvo clarity generate-current-process <process-id>`). For several processes, make one `bulkGenerateClarityProcessSnapshots` call with `kind: "current_process"` and all `process_ids` (`duvo clarity generate-maps <process-id...>`), and send the ids it returns as `deferred` again once some started runs finish. Generation runs in the background, so check again later.
 2. Call `listClarityProcessSummaries` for the team with `detail: "skeleton"` and `include_current_steps: "true"`. The process carries its summary and SWOT, and the roles and systems involved. Steps and projected impact appear only once the process also has a transformation proposal.
-3. For the step-by-step current process, call `listClarityProcessSnapshots` with `process_id` and `kind: "current_process"` (`duvo clarity list-snapshots <process-id> current_process`), take the snapshot with the highest `version_number`, and read it with `getClarityProcessSnapshot` (`duvo clarity get-current-process <process-id> <snapshot-id>`).
+3. For the step-by-step current process, call `listClarityProcessSnapshots` with `process_id` and `kind: "current_process"` (`duvo clarity list-snapshots <process-id> current_process`), select the snapshot with `status: "live"` (rather than blindly taking the highest `version_number`, which can be an unpromoted `draft` or `generating` snapshot), and read it with `getClarityProcessSnapshot` (`duvo clarity get-current-process <process-id> <snapshot-id>`).
 4. Analyze what you read: how the work flows, where it waits, where people or systems hand work over, and what the interviewees said is hard. Base every claim on the process data. Say where the picture is thin because an interview is missing.
 
 Only say that a person said or confirmed something if it is in their interview's summary or transcript. Quote it, or name the interview it came from. Label anything you inferred from the process data as your inference, not as something someone said.
