@@ -447,8 +447,8 @@ the CLI rather than restating per-command:
 - **Clarity artifact imports use a two-phase API under the hood.** Use
   `duvo clarity import-artifact <process-id> <file>` for local Miro SVG,
   XML, PNG, or JPEG exports. It creates the signed URL, uploads bytes, and
-  completes the import. For custom upload clients or artifact-chat
-  workflows, use `duvo api` against the public route directly.
+  completes the import. For custom upload clients, use `duvo api` against
+  the public route directly.
 - **Slack channel triggers need a connected workspace first.**
   `agents slack-triggers create` fails unless the Slack workspace is
   already bound to the agent — check with `agents slack-triggers

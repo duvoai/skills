@@ -646,10 +646,9 @@ duvo clarity promote-current-process "$process_id" <current-snapshot-id>
 duvo clarity promote-transformation-proposal "$process_id" <proposal-snapshot-id>
 ```
 
-For custom upload clients or artifact-chat workflows without a high-level
-CLI command, use `duvo api` against the public route directly. Prefer
-`import-artifact` for normal local files because it performs all three
-artifact-import steps in one command.
+For custom upload clients, use `duvo api` against the public route
+directly. Prefer `import-artifact` for normal local files because it
+performs all three artifact-import steps in one command.
 
 ## 10. Use `duvo api` for endpoints without a high-level command
 
