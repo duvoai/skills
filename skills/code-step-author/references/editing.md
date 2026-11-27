@@ -19,30 +19,103 @@ question card the chat's editing rules describe; a host with no such rule
 takes a clear request ("make it skip invoices under 100 EUR, and save it") as
 the yes. Ask first when the change is ambiguous.
 
-## 2. Find the draft
+## 2. Find the revision to edit
 
 Save only to a draft revision. A save to the live revision changes what runs on
-the next Case.
+the next Case. `require_draft: true` on every save (section 5) makes sure it
+cannot.
 
-- `listAgentRevisions` for the step, and take the draft (`status: "draft"`).
-  With several drafts, take the one the user named or has open; otherwise
-  the most recent one.
-- With no draft, create one from the live revision with `createRevision`,
-  passing `source_build_id` (the live revision's id) and the config you read
-  from it with `getRevision`. Use the draft it returns.
-- On a team with automation revisions, an edit lands in an Automation draft
-  revision. When the user has one open or names one, pass its id as
-  `selected_automation_revision_id` on `createRevision` and on every
-  `updateRevision`, retries included; without it the edit goes to the draft of
-  the active revision. Do not invent the id.
-- The save can land on another draft than the one you named: the revision id
-  the save returns, or the one a refusal names, is the draft to read and save
-  from then on, under the same `selected_automation_revision_id`.
+On a team with automation revisions, an edit lands in an Automation draft
+revision. When the user has one open or names one, pass its id as
+`selected_automation_revision_id` on every `updateRevision` and
+`createRevision`, retries included; without it the edit goes to the
+Automation's open draft: the active revision's draft, or, on an Automation
+that has never been made active, its existing draft. Do not invent the id.
+
+1. **Find the draft through the live revision.** `listAgentRevisions` for the
+   step with `status: "live"`, then `getRevision` on it. Do not build your
+   change yet: the draft can hold files and changes the live revision does
+   not. Send `updateRevision` to the live revision with its `config` exactly as
+   you read it, `expected_config_hash` set to its `config_hash`, and
+   `require_draft: true`. This save changes no content. What it does tells
+   you which revision to edit:
+   - **It saves.** The team has automation revisions. The server never saves
+     to the live revision: it sent the save to this step's draft in the
+     selected Automation revision, or in the active revision's draft when none
+     is selected, and forked that draft from the live revision when the step
+     had none there. The revision id the save returns is the one to edit.
+   - **409 `revision_config_changed`.** The step's draft already holds other
+     changes. Nothing was saved. The refusal's `build_id` is the revision to
+     edit.
+   - **409 `revision_not_draft`.** The team saves to the step's own draft.
+     Nothing was saved. Go on with 2.
+   - **Any other refusal:** handle it as section 5 says.
+2. **Without automation revisions, or with no live revision** (a step that
+   has never been made live, such as one in an Automation that has never been
+   made active, or one added in an Automation draft): `listAgentRevisions` for
+   the step, and take the draft (`status: "draft"`). With several drafts, take
+   the one the user named or has open; otherwise the most recent one. If the step has neither a
+   live revision nor a draft, tell the user and stop. With no draft but a live
+   revision, create one from the live revision with `createRevision`, passing `source_build_id` (the
+   live revision's id) and the config you read from it with `getRevision`.
+   On a team with automation revisions, when the step has no live revision,
+   the draft you took may be left over from a discarded Automation draft. Any
+   save to it adds the step, with its old program, to an Automation draft.
+   That is the selected one (when the selected revision is the active one,
+   its draft, which the save creates if there is none); with none selected,
+   it is the Automation's open draft: the active revision's draft, which the
+   save creates if there is none, or, on an Automation that has never been
+   made active, its existing draft. When the save would create the active
+   revision's draft but the Automation already has an open draft based on an
+   older revision, it is refused with a conflict and writes nothing: tell
+   the user to update or discard that draft in Automations, then edit again.
+   No read tells you which steps an Automation draft holds, so unless
+   the user is editing the step in that Automation draft right now, ask them
+   whether the step is part of it, with or without a selected Automation
+   revision, and go on only on a clear yes. On a team without automation
+   revisions, a save goes into the draft you took and into no Automation
+   draft. A `selected_automation_revision_id` exists only on a team with
+   automation revisions, so with one, ask about the selected draft as above.
+   With none, when you cannot tell which kind of team it is, ask one question
+   that covers both: this draft may hold an outdated version of the step, and if
+   the step's Automation uses revisions (it has an active revision or a
+   draft), the save also puts the step into its open draft, creating that
+   draft if there is none. Is this the version they want to edit, and, if the
+   Automation uses revisions, should the step be in that draft? Go on only
+   on a clear yes to both; when the user says the Automation does not use
+   revisions, a yes to the first is enough.
+   With a `selected_automation_revision_id`, the draft you took may belong to
+   another Automation revision. Once the user has said yes, the selected
+   Automation draft holds a draft of the step, and the server saves to that
+   draft rather than to the one you took: the one you took only supplies the
+   hash, so the save either changes nothing or is refused with the right
+   draft's `build_id`. Confirm the draft the same way as in 1: send it its own
+   `config` unchanged, with its `config_hash` and `require_draft: true`. The
+   revision id it returns, or the `build_id` of a `revision_config_changed`
+   refusal, is the one to edit. Without a selected id, use the draft you took.
+
+Then read the revision to edit (section 3) and build your change on it.
+
+Take a draft from the listing only after the save to the live revision is
+refused with `revision_not_draft`, or when the step has no live revision; in
+that second case, ask and confirm as 2 says. `listAgentRevisions` does not
+know which Automation revision is selected, and it can list a draft left
+behind by an Automation draft that was discarded. When the target Automation
+draft (the selected one, or the Automation's open draft) has not changed the
+step yet, the server saves to the draft you name as it is, bringing the
+discarded change back.
+
+From then on, the revision id a save returns, or the `build_id` a
+`revision_config_changed` refusal names, is the draft to read and save, under
+the same `selected_automation_revision_id`. When it changes, read its config
+and files from scratch (section 3) before you build the change again. Never
+reuse content, a hash or a file list you read from another revision.
 
 ## 3. Read what is there now
 
-1. `getRevision` on the draft. Keep its whole `config` and its `config_hash`.
-2. `listCodeStepFiles` on the draft. It returns a page at a time: read pages
+1. `getRevision` on the revision from step 2. Keep its whole `config` and its
+   `config_hash`.
+2. `listCodeStepFiles` on the same revision. It returns a page at a time: read pages
    until you hold `total` files before you decide a file is missing.
 3. `getCodeStepFile` (by `path`) for each file you will change, and for any
    file you need in order to understand the change. If chat refuses a file as
@@ -111,7 +184,7 @@ nothing checks that for you. A program holds at most 200 files, each up to
 
 ## 5. Save with the read's hash
 
-Call `updateRevision` on the draft with the whole new `config`,
+Call `updateRevision` on the revision you read with the whole new `config`,
 `expected_config_hash` set to the `config_hash` you read in step 3, and
 `require_draft: true`. Send no `handoverTargetIds`; a code step has none, and
 leaving them out keeps the stored ones.
@@ -119,17 +192,22 @@ leaving them out keeps the stored ones.
 The hash is what keeps your save from erasing someone else's. The builder may
 be open on the same draft and autosaving, or another chat may have saved it.
 
-- **409 with code `revision_config_changed`:** the draft changed after your
-  read, and nothing was saved. Its message names the revision the save landed
-  on; use that id from now on, since rereading a different draft would be
-  refused again. Go back to step 3: read that revision, apply your change to
-  what it holds now, and save with its new `config_hash`. If the
+- **409 with code `revision_config_changed`:** the revision the save landed on
+  changed after your read, or already held other changes, and nothing was
+  saved. Its message names the revision the save landed
+  on (`build_id`); use that id from now on, since rereading a different draft
+  would be refused again. Keep the same `selected_automation_revision_id`. Go
+  back to step 3: read that revision's config, file list and every file you
+  change or need, apply your change to what it holds now, upload again any
+  file whose content differs, and save with its new `config_hash`. If the
   other change touched the same file, tell the user what changed and check the
   change still makes sense before you save. Never retry the old config, and
   never drop `expected_config_hash` to get past the refusal.
-- **409 with code `revision_not_draft`:** the revision was made live after
-  your read, so the save was refused rather than changing what runs. Go back
-  to step 2 and find or create the step's draft.
+- **409 with code `revision_not_draft`:** the save would have changed a
+  revision that is not a draft, so it was refused. On the first save to the
+  live revision, step 2 says what this means. Later, the draft was made live
+  after your read: go back to step 2 and start again from the live revision,
+  under the same `selected_automation_revision_id`, reading everything again.
 - **409 with code `revision_generation_pending`:** a generation on the draft
   is running or waiting for review in the builder, and discarding it would
   erase your save. Tell the user to keep or discard it there first, then try
