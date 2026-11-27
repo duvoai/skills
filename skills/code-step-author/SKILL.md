@@ -1,18 +1,20 @@
 ---
 name: code-step-author
 description: >
-  Answer questions about writing the Python program of a Duvo code step and
-  the `duvo` SDK it calls. Use when the user asks how a code step reads its
-  case, claims or settles work on a Queue, reaches a Connection, reads Policy
-  values or attached files, what `duvo.execution` holds, which errors the SDK
-  raises, or wants a snippet for a code step. Grounds every answer in the SDK
-  surface that actually ships into the sandbox, and hands the writing of the
-  program itself to the step's own AI generation rather than pasting code the
-  user must transcribe.
+  Write, change, explain or debug the Python program of a Duvo code step,
+  single-file or multi-file. Use when the user wants a code step's program
+  changed ("change this code step", "edit main.py", "add a helper file",
+  "fix the step's code"), or asks how a code step reads its case, claims or
+  settles work on a Queue, reaches a Connection, reads Policy values or
+  attached files, what `duvo.execution` holds, which errors the SDK raises, or
+  wants a snippet for a code step. Reads and edits the step's files directly
+  with listCodeStepFiles, getCodeStepFile, uploadCodeStepFile and
+  updateRevision on a draft, and grounds every answer in the SDK surface that
+  ships into the sandbox.
 license: MIT
 metadata:
   author: duvoai
-  version: "1.0.0"
+  version: "1.1.0"
   website: https://duvo.ai
   docs: https://docs.duvo.ai
 ---
@@ -71,17 +73,32 @@ Answer from the reference, in the user's terms:
 
 Both tools are read-only and describe one Build. They are not available where code steps are off, in which case answer from `references/sdk.md` alone and say tool names are unverified.
 
-## Writing the program is a different action
+## Changing the program
 
-Answering a question is free. **Changing the step's program is a save**, and it goes through the Code Step's own AI generation — not through you pasting source the user has to transcribe.
+Answering a question is free. **Changing the program is a save**, and you make
+it yourself: read the step's files, write the new content, and save it to a
+draft revision. This is the same for a single-file program and a multi-file
+one, and for adding a file to a step that had one. Follow
+`references/editing.md` step by step; it names the tools:
 
-When the user wants the program written or changed:
+- `listCodeStepFiles` and `getCodeStepFile` read the program, file by file. A
+  single-file program reads as one file, `main.py`.
+- `uploadCodeStepFile` stores a file's new content and returns its manifest
+  entry. Uploading alone changes nothing.
+- `updateRevision` saves the new config to the draft. Pass the `config_hash`
+  of your read as `expected_config_hash`, so a change someone saved in between
+  (the builder, another chat) refuses your save instead of being overwritten,
+  and `require_draft: true`, so it never lands on a revision that went live.
 
-1. Confirm what the change should do. A request for advice is not authorization to save.
-2. Run the generation lifecycle in `references/generation.md` — `generateRevision` on the step's Build with the confirmed prompt, poll `getBuilderRun`, present the diff, and accept or decline on the user's word. It writes a draft for review; it does not promote or activate anything.
-3. The generation is given this same SDK reference **and this revision's tool catalog**, so restate neither in the prompt. Pass what the author wants the step to _do_.
+`getRevision` shows a multi-file program as a manifest of digests, not as
+source: that is expected, and the file tools above read the source. Never tell
+the user a code step's files cannot be loaded or edited before you have tried
+them.
 
-Two things it cannot edit, and the user should be told before they type a prompt rather than after: a step whose source is its own **files** rather than a program on the Build, and a Build whose config cannot be read.
+Do not use `generateRevision` for a code step. Show the user the changed lines
+after the save. The draft is the review: triggers and Runs started outside the
+builder keep using the live revision until it is made live, which needs the
+user's explicit go. To try the draft first, the user runs it in the builder.
 
 ## Boundaries
 
@@ -89,6 +106,7 @@ Two things it cannot edit, and the user should be told before they type a prompt
 | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | What the `duvo` SDK can do, or a snippet against it | This skill                                                                                                                                                             |
 | Which Connections and tools one revision has        | This skill — `listCodeStepTools`, `describeCodeStepTools`                                                                                                              |
+| A code step's program changed, one file or several  | This skill — `references/editing.md`                                                                                                                                   |
 | An Agent's AOP written, rewritten, or critiqued     | `aop-writer` — none of the SDK applies to an AOP                                                                                                                       |
 | Why one Code Step Run failed                        | `run-debugger`, then come back here if the fix is in the SDK                                                                                                           |
 | Where a Code Step belongs in a new workflow         | Use `workflow-architect` when available; otherwise use the current workflow and `references/sdk.md` to explain placement. Do not claim to invoke an unavailable skill. |
