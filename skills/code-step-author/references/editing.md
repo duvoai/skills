@@ -12,12 +12,14 @@ these by name with tool search when they are not loaded yet.
 
 ## 1. Agree on the change
 
-A request for advice is not a request to save. Before you write, say in one or
-two sentences what the change will do and which files it touches, and get the
-user's yes the way your host confirms a revision save. In Ask Duvo that is the
-question card the chat's editing rules describe; a host with no such rule
-takes a clear request ("make it skip invoices under 100 EUR, and save it") as
-the yes. Ask first when the change is ambiguous.
+A request for advice is not a request to save. A clear request to change the
+step ("make it skip invoices under 100 EUR") is the yes: the save lands in a
+draft, which changes nothing that runs, so save it without asking again. Say in
+one or two sentences what the change does and which files it touches. Ask
+first, the way your host confirms a revision save, when the change is
+ambiguous, would go beyond what the user asked for, or applies a Policy
+answer. In Ask Duvo that is the question card the chat's editing rules
+describe. Section 2 names the cases where you still ask which draft to edit.
 
 ## 2. Find the revision to edit
 
@@ -89,7 +91,7 @@ that has never been made active, its existing draft. Do not invent the id.
    Automation draft holds a draft of the step, and the server saves to that
    draft rather than to the one you took: the one you took only supplies the
    hash, so the save either changes nothing or is refused with the right
-   draft's `build_id`. Confirm the draft the same way as in 1: send it its own
+   draft's `build_id`. Confirm the draft the same way as in step 1 above: send it its own
    `config` unchanged, with its `config_hash` and `require_draft: true`. The
    revision id it returns, or the `build_id` of a `revision_config_changed`
    refusal, is the one to edit. Without a selected id, use the draft you took.
